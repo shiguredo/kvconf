@@ -18,24 +18,26 @@ parse_lines(File, Configurations, LineNumber) ->
             {ok, Configurations};
         {error, Reason} ->
             {error, {read_line_error, Reason, LineNumber}};
-        {ok, [$# | _]} ->
-            parse_lines(File, Configurations, LineNumber + 1);
         {ok, Line} ->
-            case re:run(Line, <<" *([^ ]*) *= *([^ ]*) *">>, [{capture, all, binary}]) of
+            case re:run(Line, <<"^ *(#.*)?$">>) of
+                %% コメント、空白だけの行はスキップする
+                {match, _} ->
+                    parse_lines(File, Configurations, LineNumber + 1);
                 nomatch ->
-                    case re:run(Line, <<"^ *$">>) of
-                        %% 空白だけの行はスキップする
-                        {match, _} ->
-                            parse_lines(File, Configurations, LineNumber + 1);
-                        _ ->
-                            {error, {invalid_format, Line, LineNumber}}
-                    end;
-                {match, [_, Key, Value]} ->
-                    case maps:is_key(Key, Value) of
-                        true ->
-                            {error, {duplicated_key, Key, LineNumber}};
-                        false ->
-                            parse_lines(File, Configurations#{Key => {Value, LineNumber}}, LineNumber + 1)
+                    case re:run(Line, <<"^([^=]*)=(.*)$">>, [{capture, all, binary}]) of
+                        nomatch ->
+                            {error, {invalid_line_format, Line, LineNumber}};
+                        {match, [_, RawKey, RawValue]} ->
+                            Key = string:trim(RawKey),
+                            Value = string:trim(RawValue),
+                            case maps:is_key(Key, Configurations) of
+                                true ->
+                                    {error, {duplicated_key, Key, LineNumber}};
+                                false ->
+                                    parse_lines(File,
+                                                Configurations#{Key => {Value, LineNumber}},
+                                                LineNumber + 1)
+                            end
                     end
             end
     end.
