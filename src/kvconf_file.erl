@@ -6,7 +6,7 @@
 open(Path) ->
     case file:open(Path, [binary, raw]) of
         {error, Reason} ->
-            {open_error, Reason, 0};
+            {error, {open_error, Reason, 0}};
         {ok, File} ->
             parse_lines(File, #{}, 1)
     end.
