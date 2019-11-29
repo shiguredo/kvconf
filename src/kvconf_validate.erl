@@ -1,10 +1,10 @@
 -module(kvconf_validate).
 
--export([validate/2]).
+-export([validate/3]).
 
--spec validate(atom(),  [kvconf:definition()]) ->
+-spec validate(atom(),  map(), [kvconf:definition()]) ->
                       ok | {error, {atom(), any(), non_neg_integer()}}.
-validate(_Applicaiton, Configurations, []) ->
+validate(_Applicaiton, _Configurations, []) ->
     ok;
 validate(Application, Configurations, [{Key, Type, required} | Rest]) ->
     case maps:find(atom_to_binary, utf8) of
@@ -20,10 +20,10 @@ validate(Application, Configurations, [{Key, Type, optional} | Rest]) ->
         {ok, ValueAndLine} ->
             validate0(Application, Configurations, Rest, Key, Type, ValueAndLine)
     end;
-validate(Application, [{Key, Type, optional, Default} | Rest]) ->
+validate(Application, Configurations, [{Key, Type, optional, Default} | Rest]) ->
     case maps:find(atom_to_binary, utf8) of
         undefined ->
-            validate0(Application, Configurations, Rest, Key, Type, {Default, 0})
+            validate0(Application, Configurations, Rest, Key, Type, {Default, 0});
         {ok, ValueAndLine} ->
             validate0(Application, Configurations, Rest, Key, Type, ValueAndLine)
     end.

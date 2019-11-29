@@ -9,7 +9,8 @@ open(Path) ->
             {open_error, Reason, 0};
         {ok, File} ->
             parse_lines(File, #{}, 1)
-    ok.
+    end.
+
 
 parse_lines(File, Configurations, LineNumber) ->
     case file:read_line(File) of
@@ -17,7 +18,7 @@ parse_lines(File, Configurations, LineNumber) ->
             {ok, Configurations};
         {error, Reason} ->
             {error, {read_line_error, Reason, LineNumber}};
-        {ok, [?# | _]} ->
+        {ok, [$# | _]} ->
             parse_lines(File, Configurations, LineNumber + 1);
         {ok, Line} ->
             case re:run(Line, <<" *([^ ]*) *= *([^ ]*) *">>, [{capture, all, binary}]) of
