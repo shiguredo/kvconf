@@ -1,53 +1,44 @@
 -module(kvconf_validate).
 
 -export([validate/2]).
--export([format_error/1]).
 
--type key() :: atom().
--type type() :: string | list_string | {integer, integer(), integer()} |
-                ipv4_address | list_ipv4_address | ipv6_address | list_ipv6_address |
-                host | port_number | boolean | http_uri | list_http_uri | list_to_binary.
--type required() :: required | optional.
-
-
--spec validate(atom(), [{key(), type(), required()}]) -> ok | {error, term()}.
-validate(_Applicaiton, []) ->
+-spec validate(atom(),  [kvconf:definition()]) ->
+                      ok | {error, {atom(), any(), non_neg_integer()}}.
+validate(_Applicaiton, Configurations, []) ->
     ok;
-validate(Application, [{Key, Type, required}|Rest]) ->
-    case application:get_env(Application, Key) of
+validate(Application, Configurations, [{Key, Type, required} | Rest]) ->
+    case maps:find(atom_to_binary, utf8) of
         undefined ->
-            {error, {required, Key}};
+            {error, {missing_required_key, Key, 0}};
         {ok, Value} ->
-            validate0(Application, Rest, Key, Type, Value)
+            validate0(Application, Configurations, Rest, Key, Type, Value)
     end;
-validate(Application, [{Key, Type, optional}|Rest]) ->
-    case application:get_env(Application, Key) of
+validate(Application, Configurations, [{Key, Type, optional} | Rest]) ->
+    case maps:find(atom_to_binary, utf8) of
         undefined ->
-            validate(Application, Rest);
-        {ok, Value} ->
-            validate0(Application, Rest, Key, Type, Value)
+            validate(Application, Configurations, Rest);
+        {ok, ValueAndLine} ->
+            validate0(Application, Configurations, Rest, Key, Type, ValueAndLine)
     end;
-validate(Application, [{Key, Type, optional, Default}|Rest]) ->
-    case application:get_env(Application, Key) of
+validate(Application, [{Key, Type, optional, Default} | Rest]) ->
+    case maps:find(atom_to_binary, utf8) of
         undefined ->
-            %% デフォルトの値は間違っていないという前提
-            ok = application:set_env(Application, Key, Default),
-            validate(Application, Rest);
-        {ok, Value} ->
-            validate0(Application, Rest, Key, Type, Value)
+            validate0(Application, Configurations, Rest, Key, Type, {Default, 0})
+        {ok, ValueAndLine} ->
+            validate0(Application, Configurations, Rest, Key, Type, ValueAndLine)
     end.
 
 
-validate0(Application, Rest, Key, Type, Value) ->
+validate0(Application, Configurations, Rest, Key, Type, {Value, LineNumber}) ->
     case validate_type(Type, Value) of
         ok ->
-            validate(Application, Rest);
-        {ok, ConvertValue} ->
+            validate(Application, Configurations, Rest);
+        {ok, ConvertedValue} ->
             %% 変換して戻ってくる可能性もある
-            ok = application:set_env(Application, Key, ConvertValue),
-            validate(Application, Rest);
+            ok = application:set_env(Application, Key, ConvertedValue),
+            validate(Application, Configurations, Rest);
         Reason when is_atom(Reason) ->
-            {error, {Reason, Key, Type, Value}}
+            {error, {Reason, Value, LineNumber}}
     end.
 
 
@@ -90,7 +81,7 @@ validate_boolean(true) ->
 validate_boolean(false) ->
     ok;
 validate_boolean(_) ->
-    badarg.
+    invalid_value.
 
 
 validate_integer(Value, Min, infinity)
@@ -100,7 +91,7 @@ validate_integer(Value, Min, Max)
   when is_integer(Value) andalso Min =< Value andalso Value =< Max ->
     ok;
 validate_integer(_Value, _Min, _Max) ->
-    badarg.
+    invalid_value.
 
 
 validate_ipv4_address(Value) ->
@@ -108,14 +99,14 @@ validate_ipv4_address(Value) ->
         {ok, IpAddress} ->
             {ok, IpAddress};
         {error, _Reason} ->
-            badarg
+            invalid_value
     end.
 
 
 validate_list_ipv4_address(Value, Min) when is_list(Value) andalso length(Value) >= Min ->
     validate_list_ipv4_address0(Value, []);
 validate_list_ipv4_address(_Value, _Min) ->
-    badarg.
+    invalid_value.
 
 validate_list_ipv4_address0([], Acc) ->
     {ok, lists:reverse(Acc)};
@@ -123,8 +114,8 @@ validate_list_ipv4_address0([Value|Rest], Acc) ->
     case validate_ipv4_address(Value) of
         {ok, IpAddress} ->
             validate_list_ipv4_address0(Rest, [IpAddress|Acc]);
-        badarg ->
-            badarg
+        invalid_value ->
+            invalid_value
     end.
 
 
@@ -133,14 +124,14 @@ validate_ipv6_address(Value) ->
         {ok, IpAddress} ->
             {ok, IpAddress};
         {error, _Reason} ->
-            badarg
+            invalid_value
     end.
 
 
 validate_list_ipv6_address(Value, Min) when is_list(Value) andalso length(Value) >= Min ->
     validate_list_ipv6_address0(Value, []);
 validate_list_ipv6_address(_Value, _Min) ->
-    badarg.
+    invalid_value.
 
 validate_list_ipv6_address0([], Acc) ->
     {ok, lists:reverse(Acc)};
@@ -148,8 +139,8 @@ validate_list_ipv6_address0([Value|Rest], Acc) ->
     case validate_ipv6_address(Value) of
         {ok, IpAddress} ->
             validate_list_ipv6_address0(Rest, [IpAddress|Acc]);
-        badarg ->
-            badarg
+        invalid_value ->
+            invalid_value
     end.
 
 
@@ -165,19 +156,19 @@ validate_ipv4_address_and_port_number(Value) when is_binary(Value) ->
                         Port when 0 =< Port andalso Port =< 65535 ->
                             {ok, {IpAddress, Port}};
                         _ ->
-                            badarg
+                            invalid_value
                     catch
                         _:_ ->
-                            badarg
+                            invalid_value
                     end;
                 {error, _Reason} ->
-                    badarg
+                    invalid_value
             end;
         _ ->
-            badarg
+            invalid_value
     end;
 validate_ipv4_address_and_port_number(_Value) ->
-    badarg.
+    invalid_value.
 
 
 validate_list_ipv4_address_and_port_number(Value) ->
@@ -190,7 +181,7 @@ validate_list_ipv4_address_and_port_number([Value|Rest], Acc) ->
         {ok, Host} ->
             validate_list_ipv4_address_and_port_number(Rest, [Host|Acc]);
         _ ->
-            badarg
+            invalid_value
     end.
 
 
@@ -198,7 +189,7 @@ validate_list_ipv4_address_and_port_number([Value|Rest], Acc) ->
 validate_string(Value) when is_list(Value) ->
     ok;
 validate_string(_Value) ->
-    badarg.
+    invalid_value.
 
 
 validate_list_string(Value) when is_list(Value) ->
@@ -211,10 +202,10 @@ validate_list_string(Value) when is_list(Value) ->
         true ->
             ok;
         false ->
-            badarg
+            invalid_value
     end;
 validate_list_string(_Value) ->
-    badarg.
+    invalid_value.
 
 
 validate_http_uri(Value) ->
@@ -222,7 +213,7 @@ validate_http_uri(Value) ->
         {ok, _Result} ->
             ok;
         {error, _Reason} ->
-            badarg
+            invalid_value
     end.
 
 
@@ -234,15 +225,6 @@ validate_list_http_uri([Value|Rest]) ->
     case validate_http_uri(Value) of
         ok ->
             validate_list_http_uri(Rest);
-        badarg ->
-            badarg
+        invalid_value ->
+            invalid_value
     end.
-
-
--spec format_error(term()) -> string().
-format_error({unknown_type, Type, Value}) ->
-    io_lib:format("CONFIG-BAD-VALUE | type=~s, value=~p", [Type, Value]);
-format_error({badarg, Key, _Type, Value}) ->
-    io_lib:format("CONFIG-BAD-VALUE | key=~s, value=~p", [Key, Value]);
-format_error({required, Key}) ->
-    io_lib:format("CONFIG-REQUIRED | key=~s", [Key]).

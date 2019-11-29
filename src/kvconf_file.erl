@@ -2,7 +2,7 @@
 
 -export([open/1]).
 
--spec open(binary()) -> {ok, map()} | {error, {atom(), any(), non_neg_integer()}.
+-spec open(binary()) -> {ok, map()} | {error, {atom(), any(), non_neg_integer()}}.
 open(Path) ->
     case file:open(Path, [binary, raw]) of
         {error, Reason} ->
@@ -34,7 +34,7 @@ parse_lines(File, Configurations, LineNumber) ->
                         true ->
                             {error, {duplicated_key, Key, LineNumber}};
                         false ->
-                            parse_lines(File, Configurations#{Key => Value}, LineNumber + 1)
+                            parse_lines(File, Configurations#{Key => {Value, LineNumber}}, LineNumber + 1)
                     end
             end
     end.
