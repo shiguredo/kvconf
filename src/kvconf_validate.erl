@@ -9,27 +9,31 @@ validate(_Applicaiton, _Configurations, []) ->
     ok;
 validate(Application, Configurations, [{Key, Type, required} | Rest]) ->
     case maps:find(atom_to_binary(Key, utf8), Configurations) of
-        undefined ->
+        error ->
             {error, {missing_required_key, Key, 0}};
         {ok, Value} ->
             validate0(Application, Configurations, Rest, Key, Type, Value)
     end;
 validate(Application, Configurations, [{Key, Type, optional} | Rest]) ->
     case maps:find(atom_to_binary(Key, utf8), Configurations) of
-        undefined ->
+        error ->
             validate(Application, Configurations, Rest);
         {ok, ValueAndLine} ->
             validate0(Application, Configurations, Rest, Key, Type, ValueAndLine)
     end;
 validate(Application, Configurations, [{Key, Type, optional, Default} | Rest]) ->
     case maps:find(atom_to_binary(Key, utf8), Configurations) of
-        undefined ->
+        error ->
             validate0(Application, Configurations, Rest, Key, Type, {Default, 0});
         {ok, ValueAndLine} ->
             validate0(Application, Configurations, Rest, Key, Type, ValueAndLine)
     end.
 
 
+validate0(Application, Configurations, Rest, Key, _Type, {DefaultValue, 0 = _LineNumber}) ->
+    %% LineNumber = 0 はデフォルト値なのでバリデートしない
+    ok = application:set_env(Application, Key, DefaultValue),
+    validate(Application, Configurations, Rest);
 validate0(Application, Configurations, Rest, Key, Type, {Value, LineNumber}) ->
     case validate_type(Type, Value) of
         {ok, ValidatedValue} ->
