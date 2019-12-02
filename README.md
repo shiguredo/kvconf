@@ -1,17 +1,16 @@
 # kvconf
 
-## Build
-
+## 設定ファイル例
 
 ```
-$ rebar3 compile
+key = value
 ```
 
 ## ライセンス
 
 
 ```
-Copyright 2019, Shunichi Shinohara <shino@shiguredo.jp>.
+Copyright 2019 Shiguredo Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
