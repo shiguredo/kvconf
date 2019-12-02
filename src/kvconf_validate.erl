@@ -1,44 +1,45 @@
 -module(kvconf_validate).
 
--export([validate/3]).
+-export([validate/2]).
 
 
--spec validate(atom(),  map(), [kvconf:definition()]) ->
+-spec validate(map(), [kvconf:definition()]) ->
                       ok | {error, {atom(), any(), non_neg_integer()}}.
-validate(_Applicaiton, _Configurations, []) ->
+validate(_Configurations, []) ->
     ok;
-validate(Application, Configurations, [{Key, Type, required} | Rest]) ->
+validate(Configurations, [{Key, Type, required} | Rest]) ->
     case maps:find(atom_to_binary(Key, utf8), Configurations) of
         error ->
             {error, {missing_required_key, Key, 0}};
         {ok, Value} ->
-            validate0(Application, Configurations, Rest, Key, Type, Value)
+            validate0(Configurations, Rest, Key, Type, Value)
     end;
-validate(Application, Configurations, [{Key, Type, optional} | Rest]) ->
+validate(Configurations, [{Key, Type, optional} | Rest]) ->
     case maps:find(atom_to_binary(Key, utf8), Configurations) of
         error ->
-            validate(Application, Configurations, Rest);
+            ok = kvconf:set_value(Key, undefined),
+            validate(Configurations, Rest);
         {ok, ValueAndLine} ->
-            validate0(Application, Configurations, Rest, Key, Type, ValueAndLine)
+            validate0(Configurations, Rest, Key, Type, ValueAndLine)
     end;
-validate(Application, Configurations, [{Key, Type, optional, Default} | Rest]) ->
+validate(Configurations, [{Key, Type, optional, Default} | Rest]) ->
     case maps:find(atom_to_binary(Key, utf8), Configurations) of
         error ->
-            validate0(Application, Configurations, Rest, Key, Type, {Default, 0});
+            validate0(Configurations, Rest, Key, Type, {Default, 0});
         {ok, ValueAndLine} ->
-            validate0(Application, Configurations, Rest, Key, Type, ValueAndLine)
+            validate0(Configurations, Rest, Key, Type, ValueAndLine)
     end.
 
 
-validate0(Application, Configurations, Rest, Key, _Type, {DefaultValue, 0 = _LineNumber}) ->
+validate0(Configurations, Rest, Key, _Type, {DefaultValue, 0 = _LineNumber}) ->
     %% LineNumber = 0 はデフォルト値なのでバリデートしない
-    ok = application:set_env(Application, Key, DefaultValue),
-    validate(Application, Configurations, Rest);
-validate0(Application, Configurations, Rest, Key, Type, {Value, LineNumber}) ->
+    ok = kvconf:set_value(Key, DefaultValue),
+    validate(Configurations, Rest);
+validate0(Configurations, Rest, Key, Type, {Value, LineNumber}) ->
     case validate_type(Type, Value) of
         {ok, ValidatedValue} ->
-            ok = application:set_env(Application, Key, ValidatedValue),
-            validate(Application, Configurations, Rest);
+            ok = kvconf:set_value(Key, ValidatedValue),
+            validate(Configurations, Rest);
         Reason when is_atom(Reason) ->
             {error, {Reason, <<(atom_to_binary(Key, utf8))/binary, " = ", Value/binary>>, LineNumber}}
     end.

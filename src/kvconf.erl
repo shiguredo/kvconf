@@ -1,6 +1,7 @@
 -module(kvconf).
 
--export([open/3]).
+-export([open/2]).
+-export([set_value/2, get_value/1]).
 
 -export_type([key/0, type/0, is_required/0, definition/0]).
 
@@ -12,11 +13,19 @@
 -type is_required() :: required | optional.
 -type definition() :: {key(), type(), is_required()} | {key(), type(), optional, term()}.
 
--spec open(atom(), [definition()], binary()) -> ok | {error, {atom(), key(), any(), non_neg_integer()}}.
-open(Application, Definitions, Path) ->
+-spec open([definition()], binary()) -> ok | {error, {atom(), key(), any(), non_neg_integer()}}.
+open(Definitions, Path) ->
     case kvconf_file:open(Path) of
         {ok, Configurations} ->
-            kvconf_validate:validate(Application, Configurations, Definitions);
+            kvconf_validate:validate(Configurations, Definitions);
         {error, Reason} ->
             {error, Reason}
     end.
+
+
+set_value(Key, Value) ->
+    ok = persistent_term:put(Key, Value).
+
+
+get_value(Key) ->
+    persistent_term:get(Key).

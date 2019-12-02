@@ -3,19 +3,20 @@
 -include_lib("eunit/include/eunit.hrl").
 
 smoke_test() ->
-    ok = kvconf:open(kernel,
-                     [{two_digits, {integer, 10, 99}, required},
-                      {url, http_uri, optional, <<"http://foo.example.com">>},
-                      {string, string, optional, <<"bang">>},
-                      {string2, string, optional, <<"bang2">>},
-                      {string3, string, optional},
-                      {bool_true, boolean, required},
-                      {bool_false, boolean, optional},
-                      {bool_default, boolean, optional, true},
-                      {ipv4, ipv4_address, required},
-                      {ipv6, ipv6_address, required},
-                      {ipv4_port, ipv4_address_and_port_number, required}],
-                     <<"test/smoke_test.conf">>),
+    ok = kvconf:open(
+           [{two_digits, {integer, 10, 99}, required},
+            {url, http_uri, optional, <<"http://foo.example.com">>},
+            {string, string, optional, <<"bang">>},
+            {string2, string, optional, <<"bang2">>},
+            {string3, string, optional},
+            {empty_string, string, optional, <<"boom!!">>},
+            {bool_true, boolean, required},
+            {bool_false, boolean, optional},
+            {bool_default, boolean, optional, true},
+            {ipv4, ipv4_address, required},
+            {ipv6, ipv6_address, required},
+            {ipv4_port, ipv4_address_and_port_number, required}],
+           <<"test/smoke_test.conf">>),
 
     ?assertEqual(71, get_value(two_digits)),
     ?assertEqual(<<"http://www.example.com/">>, get_value(url)),
@@ -26,14 +27,11 @@ smoke_test() ->
     ?assertEqual({0,0,0,0,0,0,0,1}, get_value(ipv6)),
     ?assertEqual(<<"foo bar baz">>, get_value(string)),
     ?assertEqual(<<"bang2">>, get_value(string2)),
-    ?assertEqual(undefined, no_value(string3)),
+    ?assertEqual(undefined, get_value(string3)),
+    ?assertEqual(<<>>, get_value(empty_string)),
     ?assertEqual({{127, 0, 0, 1}, 777}, get_value(ipv4_port)),
     ok.
 
 
 get_value(Key) ->
-    {ok, Value} = application:get_env(kernel, Key),
-    Value.
-
-no_value(Key) ->
-    application:get_env(kernel, Key).
+    kvconf:get_value(Key).
