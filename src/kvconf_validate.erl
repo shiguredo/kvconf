@@ -40,7 +40,7 @@ validate0(Application, Configurations, Rest, Key, Type, {Value, LineNumber}) ->
             ok = application:set_env(Application, Key, ValidatedValue),
             validate(Application, Configurations, Rest);
         Reason when is_atom(Reason) ->
-            {error, {Reason, <<Key/binary, $=, Value/binary>>, LineNumber}}
+            {error, {Reason, <<(atom_to_binary(Key, utf8))/binary, " = ", Value/binary>>, LineNumber}}
     end.
 
 

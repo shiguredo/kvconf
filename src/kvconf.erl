@@ -12,7 +12,7 @@
 -type is_required() :: required | optional.
 -type definition() :: {key(), type(), is_required()} | {key(), type(), optional, term()}.
 
--spec open(atom(), [definition()], binary()) -> ok | {error, {atom(), any(), non_neg_integer()}}.
+-spec open(atom(), [definition()], binary()) -> ok | {error, {atom(), key(), any(), non_neg_integer()}}.
 open(Application, Definitions, Path) ->
     case kvconf_file:open(Path) of
         {ok, Configurations} ->
