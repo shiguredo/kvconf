@@ -26,7 +26,6 @@ smoke_test() ->
 
 
 get_value(Key) ->
-    ?debugVal(Key),
     {ok, Value} = application:get_env(kernel, Key),
     Value.
 
