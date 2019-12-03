@@ -10,11 +10,13 @@
 validate(_LastLineNumber, _Configurations, []) ->
     ok;
 validate(LastLineNumber, Configurations, [{Key, Type, Requirement} | DefinitionList]) ->
-    case maps:get(atom_to_binary(Key, utf8), Configurations, undefined) of
-        undefined ->
-            case validate_one(Type, Requirement, undefined) of
+    case maps:get(atom_to_binary(Key, utf8), Configurations, not_found) of
+        not_found ->
+            case validate_one(Type, Requirement, not_found) of
                 {ok, ValidatedValue} ->
                     ok = kvconf:set_value(Key, ValidatedValue),
+                    validate(LastLineNumber, Configurations, DefinitionList);
+                {error, skip} ->
                     validate(LastLineNumber, Configurations, DefinitionList);
                 {error, Reason} ->
                     %% 設定には存在しないので最後の行番号を入れる。
@@ -32,16 +34,16 @@ validate(LastLineNumber, Configurations, [{Key, Type, Requirement} | DefinitionL
     end.
 
 
-validate_one(_Type, required, undefined) ->
+validate_one(_Type, required, not_found) ->
     {error, missing_required_key};
 validate_one(Type, required, Value) ->
     validate_type(Type, Value);
-validate_one(_Type, optional, undefined) ->
-    %% デフォルト値はそのまま
-    {ok, undefined};
+validate_one(_Type, optional, not_found) ->
+    %% デフォルト値は何もしない
+    {error, skip};
 validate_one(Type, optional, Value) ->
     validate_type(Type, Value);
-validate_one(_Type, {optional, DefaultValue}, undefined) ->
+validate_one(_Type, {optional, DefaultValue}, not_found) ->
     {ok, DefaultValue};
 validate_one(Type, {optional, _DefaultValue}, Value) ->
     validate_type(Type, Value).

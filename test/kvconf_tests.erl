@@ -29,7 +29,7 @@ smoke_test() ->
     ?assertEqual({0,0,0,0,0,0,0,1}, get_value(ipv6)),
     ?assertEqual(<<"foo bar baz">>, get_value(string)),
     ?assertEqual(<<"bang2">>, get_value(string2)),
-    ?assertEqual(undefined, get_value(string3)),
+    ?assertEqual(not_found, get_value(string3)),
     ?assertEqual(<<>>, get_value(empty_string)),
     ?assertEqual({{127, 0, 0, 1}, 777}, get_value(ipv4_port)),
     ok.

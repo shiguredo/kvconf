@@ -41,7 +41,7 @@ unset_value(Key) ->
 
 -spec get_value(key()) -> term().
 get_value(Key) ->
-    persistent_term:get(Key).
+    persistent_term:get(Key, not_found).
 
 
 parse(Binary) ->
