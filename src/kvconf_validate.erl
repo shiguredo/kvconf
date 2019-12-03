@@ -2,8 +2,10 @@
 
 -export([validate/3]).
 
+-include("kvconf.hrl").
 
--spec validate(non_neg_integer(), map(), [kvconf:definition()]) ->
+
+-spec validate(non_neg_integer(), map(), [definition_internal()]) ->
                       ok | {error, {atom(), any(), non_neg_integer()}}.
 validate(_LastLineNumber, _Configurations, []) ->
     ok;
