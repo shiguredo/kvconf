@@ -1,48 +1,48 @@
 -module(kvconf_validate).
 
--export([validate/2]).
+-export([validate/3]).
 
 
--spec validate(map(), [kvconf:definition()]) ->
+-spec validate(non_neg_integer(), map(), [kvconf:definition()]) ->
                       ok | {error, {atom(), any(), non_neg_integer()}}.
-validate(_Configurations, []) ->
+validate(_LastLineNumber, _Configurations, []) ->
     ok;
-validate(Configurations, [{Key, Type, required} | Rest]) ->
-    case maps:find(atom_to_binary(Key, utf8), Configurations) of
-        error ->
-            {error, {missing_required_key, Key, 0}};
-        {ok, Value} ->
-            validate0(Configurations, Rest, Key, Type, Value)
-    end;
-validate(Configurations, [{Key, Type, optional} | Rest]) ->
-    case maps:find(atom_to_binary(Key, utf8), Configurations) of
-        error ->
-            ok = kvconf:set_value(Key, undefined),
-            validate(Configurations, Rest);
-        {ok, ValueAndLine} ->
-            validate0(Configurations, Rest, Key, Type, ValueAndLine)
-    end;
-validate(Configurations, [{Key, Type, optional, Default} | Rest]) ->
-    case maps:find(atom_to_binary(Key, utf8), Configurations) of
-        error ->
-            validate0(Configurations, Rest, Key, Type, {Default, 0});
-        {ok, ValueAndLine} ->
-            validate0(Configurations, Rest, Key, Type, ValueAndLine)
+validate(LastLineNumber, Configurations, [{Key, Type, Requirement} | DefinitionList]) ->
+    case maps:get(atom_to_binary(Key, utf8), Configurations, undefined) of
+        undefined ->
+            case validate_one(Type, Requirement, undefined) of
+                {ok, ValidatedValue} ->
+                    ok = kvconf:set_value(Key, ValidatedValue),
+                    validate(LastLineNumber, Configurations, DefinitionList);
+                {error, Reason} ->
+                    %% 設定には存在しないので最後の行番号を入れる。
+                    %% ファイルを最後まで探したけど駄目だった、という気持ち。
+                    {error, {Reason, Key, LastLineNumber}}
+            end;
+        {Value, Line, LineNumber} ->
+            case validate_one(Type, Requirement, Value) of
+                {ok, ValidatedValue} ->
+                    ok = kvconf:set_value(Key, ValidatedValue),
+                    validate(LastLineNumber, Configurations, DefinitionList);
+                {error, Reason} ->
+                    {error, {Reason, Line, LineNumber}}
+            end
     end.
 
 
-validate0(Configurations, Rest, Key, _Type, {DefaultValue, 0 = _LineNumber}) ->
-    %% LineNumber = 0 はデフォルト値なのでバリデートしない
-    ok = kvconf:set_value(Key, DefaultValue),
-    validate(Configurations, Rest);
-validate0(Configurations, Rest, Key, Type, {Value, LineNumber}) ->
-    case validate_type(Type, Value) of
-        {ok, ValidatedValue} ->
-            ok = kvconf:set_value(Key, ValidatedValue),
-            validate(Configurations, Rest);
-        Reason when is_atom(Reason) ->
-            {error, {Reason, <<(atom_to_binary(Key, utf8))/binary, " = ", Value/binary>>, LineNumber}}
-    end.
+validate_one(_Type, required, undefined) ->
+    {error, missing_required_key};
+validate_one(Type, required, Value) ->
+    validate_type(Type, Value);
+validate_one(_Type, optional, undefined) ->
+    %% デフォルト値はそのまま
+    {ok, undefined};
+validate_one(Type, optional, Value) ->
+    validate_type(Type, Value);
+validate_one(_Type, {optional, DefaultValue}, undefined) ->
+    {ok, DefaultValue};
+validate_one(Type, {optional, _DefaultValue}, Value) ->
+    validate_type(Type, Value).
 
 
 validate_type(string, Value) ->

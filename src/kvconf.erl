@@ -1,31 +1,69 @@
 -module(kvconf).
 
--export([open/2]).
--export([set_value/2, get_value/1]).
+-export([initialize/2]).
+-export([set_value/2, unset_value/1, get_value/1]).
 
--export_type([key/0, type/0, is_required/0, definition/0]).
+-export_type([key/0, type/0, requirement/0, definition/0]).
 
 -type key() :: atom().
+-type type() :: string | {integer, integer(), integer()} | boolean
+              | ipv4_address | ipv6_address | host | port_number | http_uri.
+-type requirement() :: required | optional | {optional, term()}.
+-type definition() :: {key(), type(), requirement()}.
 
--type type() :: string | list_string | {integer, integer(), integer()} |
-                ipv4_address | list_ipv4_address | ipv6_address | list_ipv6_address |
-                host | port_number | boolean | http_uri | list_http_uri | list_to_binary.
--type is_required() :: required | optional.
--type definition() :: {key(), type(), is_required()} | {key(), type(), optional, term()}.
 
--spec open([definition()], binary()) -> ok | {error, {atom(), key(), any(), non_neg_integer()}}.
-open(Definitions, Path) ->
-    case kvconf_file:open(Path) of
-        {ok, Configurations} ->
-            kvconf_validate:validate(Configurations, Definitions);
+-spec initialize([definition()], binary()) -> ok | {error, {atom(), key(), any(), non_neg_integer()}}.
+initialize(Definitions, Binary) ->
+    case parse(Binary) of
+        {ok, Configurations, LastLineNumber} ->
+            kvconf_validate:validate(LastLineNumber, Configurations, Definitions);
         {error, Reason} ->
             {error, Reason}
     end.
 
 
+-spec set_value(key(), term()) -> ok.
 set_value(Key, Value) ->
     ok = persistent_term:put(Key, Value).
 
 
+-spec unset_value(key()) -> ok.
+unset_value(Key) ->
+    _ = persistent_term:erase(Key),
+    ok.
+
+
+-spec get_value(key()) -> term().
 get_value(Key) ->
     persistent_term:get(Key).
+
+
+parse(Binary) ->
+    Lines = binary:split(Binary, <<$\n>>, [global]),
+    parse_lines(#{}, Lines, 1).
+
+
+parse_lines(Configurations, [], LastLineNumber) ->
+    {ok, Configurations, LastLineNumber};
+parse_lines(Configurations, [Line | Lines], LineNumber) ->
+    case re:run(Line, <<"^ *(#.*)?$">>) of
+        %% コメント、空白だけの行はスキップする
+        {match, _} ->
+            parse_lines(Configurations, Lines, LineNumber + 1);
+        nomatch ->
+            case re:run(Line, <<"^([^=]*)=(.*)$">>, [{capture, all, binary}]) of
+                nomatch ->
+                    {error, {invalid_line_format, Line, LineNumber}};
+                {match, [_, RawKey, RawValue]} ->
+                    Key = string:trim(RawKey),
+                    Value = string:trim(RawValue),
+                    case maps:is_key(Key, Configurations) of
+                        true ->
+                            {error, {duplicated_key, Key, LineNumber}};
+                        false ->
+                            parse_lines(Configurations#{Key => {Value, Line, LineNumber}},
+                                        Lines,
+                                        LineNumber + 1)
+                    end
+            end
+    end.

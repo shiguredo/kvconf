@@ -2,21 +2,23 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
+
 smoke_test() ->
-    ok = kvconf:open(
-           [{two_digits, {integer, 10, 99}, required},
-            {url, http_uri, optional, <<"http://foo.example.com">>},
-            {string, string, optional, <<"bang">>},
-            {string2, string, optional, <<"bang2">>},
-            {string3, string, optional},
-            {empty_string, string, optional, <<"boom!!">>},
-            {bool_true, boolean, required},
-            {bool_false, boolean, optional},
-            {bool_default, boolean, optional, true},
-            {ipv4, ipv4_address, required},
-            {ipv6, ipv6_address, required},
-            {ipv4_port, ipv4_address_and_port_number, required}],
-           <<"test/smoke_test.conf">>),
+    {ok, Binary} = file:read_file(<<"test/smoke_test.conf">>),
+    ok = kvconf:initialize(
+           [{two_digits,   {integer, 10, 99},            required                                },
+            {url,          http_uri,                     {optional, <<"http://foo.example.com">>}},
+            {string,       string,                       {optional, <<"bang">>}                  },
+            {string2,      string,                       {optional, <<"bang2">>}                 },
+            {string3,      string,                       optional                                },
+            {empty_string, string,                       {optional, <<"boom!!">>}                },
+            {bool_true,    boolean,                      required                                },
+            {bool_false,   boolean,                      optional                                },
+            {bool_default, boolean,                      {optional, true}                        },
+            {ipv4,         ipv4_address,                 required                                },
+            {ipv6,         ipv6_address,                 required                                },
+            {ipv4_port,    ipv4_address_and_port_number, required                                }],
+           Binary),
 
     ?assertEqual(71, get_value(two_digits)),
     ?assertEqual(<<"http://www.example.com/">>, get_value(url)),
