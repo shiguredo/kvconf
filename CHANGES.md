@@ -12,6 +12,8 @@
 
 ## develop
 
+## 1.0.1
+
 ### FIX
 
 - invalid_value のパターンマッチが失敗する問題を修正した
