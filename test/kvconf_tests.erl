@@ -35,5 +35,13 @@ smoke_test() ->
     ok.
 
 
+invalid_value_test() ->
+    Line = <<"a = Vuls">>,
+    {error, {invalid_value, Line, 2}} = kvconf:initialize(
+                                          [{a, boolean, optional}],
+                                          <<"\n", Line/binary, "\n">>),
+    ok.
+
+
 get_value(Key) ->
     kvconf:get_value(Key).
