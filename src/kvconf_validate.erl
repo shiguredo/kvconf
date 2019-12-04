@@ -18,7 +18,7 @@ validate(LastLineNumber, Configurations, [{Key, Type, Requirement} | DefinitionL
                     validate(LastLineNumber, Configurations, DefinitionList);
                 {error, skip} ->
                     validate(LastLineNumber, Configurations, DefinitionList);
-                {error, Reason} ->
+                Reason when is_atom(Reason) ->
                     %% 設定には存在しないので最後の行番号を入れる。
                     %% ファイルを最後まで探したけど駄目だった、という気持ち。
                     {error, {Reason, Key, LastLineNumber}}
@@ -28,7 +28,7 @@ validate(LastLineNumber, Configurations, [{Key, Type, Requirement} | DefinitionL
                 {ok, ValidatedValue} ->
                     ok = kvconf:set_value(Key, ValidatedValue),
                     validate(LastLineNumber, Configurations, DefinitionList);
-                {error, Reason} ->
+                Reason when is_atom(Reason) ->
                     {error, {Reason, Line, LineNumber}}
             end
     end.
