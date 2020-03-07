@@ -12,11 +12,17 @@
 
 ## develop
 
+## 2020.1
+
+**YYYY.RELEASE[.FIX] にリリース番号を変更する**
+
+- [FIX] uri_string:parse/1 を利用するようにする
+    - @voluntas
+
 ## 1.0.1
 
-### FIX
-
-- invalid_value のパターンマッチが失敗する問題を修正した
+- [FIX] invalid_value のパターンマッチが失敗する問題を修正する
+    - @shino
 
 ## 1.0.0
 

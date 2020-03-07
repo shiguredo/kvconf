@@ -148,9 +148,10 @@ validate_string(_Value) ->
 
 
 validate_http_uri(Value) ->
-    case http_uri:parse(Value) of
-        {ok, _Result} ->
+    case uri_string:parse(Value) of
+        #{scheme := Scheme} when Scheme =:= <<"https">>;
+                                 Scheme =:= <<"http">> ->
             {ok, Value};
-        {error, _Reason} ->
+        _ ->
             invalid_value
     end.
