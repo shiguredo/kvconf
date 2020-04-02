@@ -49,6 +49,8 @@ validate_one(Type, {optional, _DefaultValue}, Value) ->
     validate_type(Type, Value).
 
 
+validate_type({atom, Candidates}, Value) ->
+    validate_atom(Value, Candidates);
 validate_type(string, Value) ->
     validate_string(Value);
 validate_type({integer, Min, Max}, Value) ->
@@ -67,6 +69,17 @@ validate_type(http_uri, Value) ->
     validate_http_uri(Value);
 validate_type(_UnknownType, _Value) ->
     unknown_type.
+
+
+validate_atom(_Value, []) ->
+    invalid_value;
+validate_atom(Value, [Candidate | Candidates]) ->
+    case atom_to_binary(Candidate, utf8) of
+        Value ->
+            {ok, Candidate};
+        _ ->
+            validate_atom(Value, Candidates)
+    end.
 
 
 validate_port_number(Value) ->
