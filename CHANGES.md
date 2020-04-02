@@ -12,6 +12,12 @@
 
 ## develop
 
+## 2020.2
+
+- [ADD] atom 型を追加する
+    - 型の書き方例 `{mode, [auto, manual]}`
+    - @shino
+
 ## 2020.1
 
 **YYYY.RELEASE[.FIX] にリリース番号を変更する**
