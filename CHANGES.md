@@ -12,6 +12,11 @@
 
 ## develop
 
+## 2020.2.1
+
+- [FIX] integer 指定時 value に `<<>>`  が渡されたときのエラー処理が正しくないのを修正する
+    - @Hexa @voluntas
+
 ## 2020.2
 
 - [ADD] atom 型を追加する
