@@ -86,7 +86,7 @@ validate_integer(Value, Min, Max) when is_binary(Value) ->
         IntValue = binary_to_integer(Value),
         validate_integer(IntValue, Min, Max)
     catch
-        throw:badarg ->
+        error:badarg ->
             invalid_value
     end;
 validate_integer(Value, Min, infinity)
@@ -155,3 +155,15 @@ validate_http_uri(Value) ->
         _ ->
             invalid_value
     end.
+
+
+-ifdef(TEST).
+
+-include_lib("eunit/include/eunit.hrl").
+
+validate_integer_test() ->
+    ?assertEqual(invalid_value, validate_integer(<<>>, 0, 10)),
+    ok.
+
+
+-endif.
