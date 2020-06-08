@@ -13,6 +13,7 @@ clean:
 
 test:
 	@./rebar3 as test eunit
+	@./rebar3 as test cover
 
 distclean:
 	@./rebar3 clean --all
