@@ -12,6 +12,10 @@
 
 ## develop
 
+- [ADD] float 型を追加する
+    - 型の書き方例 `{float_foo, {float, -10, 10}, required}`
+    - @voluntas
+
 ## 2020.2.1
 
 - [FIX] integer 指定時 value に `<<>>`  が渡されたときのエラー処理が正しくないのを修正する
