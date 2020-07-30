@@ -12,6 +12,8 @@
 
 ## develop
 
+## 2020.3
+
 - [ADD] float 型を追加する
     - 型の書き方例 `{float_foo, {float, -10, 10}, required}`
     - @voluntas
