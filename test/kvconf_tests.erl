@@ -7,6 +7,8 @@ smoke_test() ->
     {ok, Binary} = file:read_file(<<"test/smoke_test.conf">>),
     ok = kvconf:initialize(
            [{two_digits,   {integer, 10, 99},            required                              },
+            {float_foo,    {float, -10, 10},             required                              },
+            {float_bar,    {float, -10, 10},             required                              },
             {url,          http_uri,                     optional, <<"http://foo.example.com">>},
             {atom_default, {atom, [foo, bar]},           optional, foo                         },
             {atom_foo,     {atom, [foo, bar]},           optional, foo                         },
@@ -24,6 +26,8 @@ smoke_test() ->
            Binary),
 
     ?assertEqual(71, get_value(two_digits)),
+    ?assertEqual(1.2, get_value(float_foo)),
+    ?assertEqual(2.2017764, get_value(float_bar)),
     ?assertEqual(<<"http://www.example.com/">>, get_value(url)),
     ?assertEqual(true, get_value(bool_true)),
     ?assertEqual(false, get_value(bool_false)),
