@@ -55,6 +55,8 @@ validate_type(string, Value) ->
     validate_string(Value);
 validate_type({integer, Min, Max}, Value) ->
     validate_integer(Value, Min, Max);
+validate_type({float, Min, Max}, Value) ->
+    validate_float(Value, Min, Max);
 validate_type(ipv4_address, Value) ->
     validate_ipv4_address(Value);
 validate_type(ipv6_address, Value) ->
@@ -109,6 +111,24 @@ validate_integer(Value, Min, Max)
   when is_integer(Value) andalso Min =< Value andalso Value =< Max ->
     {ok, Value};
 validate_integer(_Value, _Min, _Max) ->
+    invalid_value.
+
+
+validate_float(Value, Min, Max) when is_binary(Value) ->
+    try
+        IntValue = binary_to_float(Value),
+        validate_float(IntValue, Min, Max)
+    catch
+        error:badarg ->
+            invalid_value
+    end;
+validate_float(Value, Min, infinity)
+  when is_float(Value) andalso Min =< Value ->
+    {ok, Value};
+validate_float(Value, Min, Max)
+  when is_float(Value) andalso Min =< Value andalso Value =< Max ->
+    {ok, Value};
+validate_float(_Value, _Min, _Max) ->
     invalid_value.
 
 
