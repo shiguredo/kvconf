@@ -14,7 +14,7 @@ key = value
 
 
 ```
-Copyright 2019 Shiguredo Inc.
+Copyright 2019-2020, Shiguredo Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

@@ -6,8 +6,8 @@
 -export_type([key/0, type/0, required/0, definition/0]).
 
 -type key() :: atom().
--type type() :: {atom, [atom()]} | string | {integer, integer(), integer()} | boolean
-              | ipv4_address | ipv6_address | host | port_number | http_uri.
+-type type() :: {atom, [atom()]} | string | {integer, integer(), integer()} | boolean |
+                list_ipv4_address | list_ipv6_address | ipv4_address | ipv6_address | host | port_number | http_uri.
 -type required() :: required | optional.
 -type definition() :: {key(), type(), required()} | {key(), type(), optional, term()}.
 
