@@ -12,6 +12,19 @@
 
 ## develop
 
+## 2020.4
+
+- [ADD] list_ipv4_address 型を追加する
+    - 設定の書き方 `list_ipv4 = 192.0.2.1, 192.0.2.3`
+    - 型の書き方例 `{list_ipv4, list_ipv4_address, options, []}`
+    - カンマ区切り、スペースで間を空けても良い
+    - @voluntas
+- [ADD] list_ipv6_address 型を追加する
+    - 設定の書き方 `list_ipv6 = 2001:0DB8::1, 2001:0DB8::2`
+    - 型の書き方例 `{list_ipv6, list_ipv6_address, options, []}`
+    - カンマ区切り、スペースで間を空けても良い
+    - @voluntas
+
 ## 2020.3
 
 - [ADD] float 型を追加する
