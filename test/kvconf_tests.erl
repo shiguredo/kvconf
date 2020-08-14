@@ -22,6 +22,8 @@ smoke_test() ->
             {bool_default, boolean,                      optional, true                        },
             {ipv4,         ipv4_address,                 required                              },
             {ipv6,         ipv6_address,                 required                              },
+            {list_ipv4,    list_ipv4_address,            optional, []                          },
+            {list_ipv6,    list_ipv6_address,            optional, []                          },
             {ipv4_port,    ipv4_address_and_port_number, required                              }],
            Binary),
 
@@ -42,6 +44,10 @@ smoke_test() ->
     ?assertEqual(not_found, get_value(string3)),
     ?assertEqual(<<>>, get_value(empty_string)),
     ?assertEqual({{127, 0, 0, 1}, 777}, get_value(ipv4_port)),
+
+    ?assertEqual([{192, 0, 2, 1}, {192, 0, 2, 3}], get_value(list_ipv4)),
+    ?assertEqual([{0,0,0,0,0,0,0,1}, {0,0,0,0,0,0,0,1}], get_value(list_ipv6)),
+
     ok.
 
 

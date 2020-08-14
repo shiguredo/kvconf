@@ -57,6 +57,10 @@ validate_type({integer, Min, Max}, Value) ->
     validate_integer(Value, Min, Max);
 validate_type({float, Min, Max}, Value) ->
     validate_float(Value, Min, Max);
+validate_type(list_ipv4_address, Value) ->
+    validate_list_ipv4_address(Value);
+validate_type(list_ipv6_address, Value) ->
+    validate_list_ipv6_address(Value);
 validate_type(ipv4_address, Value) ->
     validate_ipv4_address(Value);
 validate_type(ipv6_address, Value) ->
@@ -139,6 +143,37 @@ validate_ipv4_address(Value) ->
         {error, _Reason} ->
             invalid_value
     end.
+
+
+validate_list_ipv4_address(Value) ->
+    RawListIpAddress = binary:split(Value, [<<",">>, <<$\s>>], [trim_all, global]),
+    validate_list_ipv4_address0(RawListIpAddress, []).
+
+validate_list_ipv4_address0([], Acc) ->
+    {ok, lists:reverse(Acc)};
+validate_list_ipv4_address0([Value|Rest], Acc) ->
+    case validate_ipv4_address(Value) of
+        {ok, IpAddress} ->
+            validate_list_ipv4_address0(Rest, [IpAddress|Acc]);
+        invalid_value ->
+            invalid_value
+    end.
+
+
+validate_list_ipv6_address(Value) ->
+    RawListIpAddress = binary:split(Value, [<<",">>, <<$\s>>], [trim_all, global]),
+    validate_list_ipv6_address0(RawListIpAddress, []).
+
+validate_list_ipv6_address0([], Acc) ->
+    {ok, lists:reverse(Acc)};
+validate_list_ipv6_address0([Value|Rest], Acc) ->
+    case validate_ipv6_address(Value) of
+        {ok, IpAddress} ->
+            validate_list_ipv6_address0(Rest, [IpAddress|Acc]);
+        invalid_value ->
+            invalid_value
+    end.
+
 
 
 validate_ipv6_address(Value) ->
