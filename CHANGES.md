@@ -12,6 +12,13 @@
 
 ## develop
 
+## 2020.5
+
+- [ADD] atom に変換付きの設定記法を追加する
+    - 型の書き方例 `{foo, {atom, [{<<"A4">>, a4}, {<<"B4">>, b4}]}, optional, a4}`
+    - 設定を `foo = B4` とすると get_value では `b4` が返ってくる
+    - @shino
+
 ## 2020.4
 
 - [ADD] list_ipv4_address 型を追加する
