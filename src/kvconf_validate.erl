@@ -79,13 +79,17 @@ validate_type(_UnknownType, _Value) ->
 
 validate_atom(_Value, []) ->
     invalid_value;
-validate_atom(Value, [Candidate | Candidates]) ->
+validate_atom(Value, [Candidate | Candidates]) when is_atom(Candidate) ->
     case atom_to_binary(Candidate, utf8) of
         Value ->
             {ok, Candidate};
         _ ->
             validate_atom(Value, Candidates)
-    end.
+    end;
+validate_atom(Value, [{Value, Candidate} | _Candidates]) when is_atom(Candidate) ->
+    {ok, Candidate};
+validate_atom(Value, [_ | Candidates]) ->
+    validate_atom(Value, Candidates).
 
 
 validate_port_number(Value) ->
