@@ -13,7 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: make test
-      - run: bash <(curl -s https://codecov.io/bash) -f _build/test/cover/eunit.coverdata
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          file: ./_build/test/cover/eunit.coverdata
       - name: Slack Notification
         if: failure()
         uses: rtCamp/action-slack-notify@v2.0.1
