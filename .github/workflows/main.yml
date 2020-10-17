@@ -1,0 +1,21 @@
+on:
+  push:
+    paths-ignore:
+    - 'doc/**'
+    - '**.rst'
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    if: "! contains(github.event.head_commit.message, 'skip ci')"
+    container:
+      image: shiguredo/erlang:otp-23.1.1-ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - run: make test
+      - run: bash <(curl -s https://codecov.io/bash) -f _build/test/cover/eunit.coverdata
+      - name: Slack Notification
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2.0.1
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
