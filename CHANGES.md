@@ -12,6 +12,8 @@
 
 ## develop
 
+## 2020.6
+
 - [CHANGE] ipv4_address_and_port_number を削除
     - @voluntas
 - [CHANGE] 定義を全て record 化する
