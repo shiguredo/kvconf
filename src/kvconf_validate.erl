@@ -212,6 +212,12 @@ validate_http_uri(Value) ->
 
 -include_lib("eunit/include/eunit.hrl").
 
+
+validate_atom_test() ->
+    ?assertEqual(invalid_value, validate_atom(<<"b">>, [a])),
+    ok.
+
+
 validate_integer_test() ->
     ?assertEqual(invalid_value, validate_integer(<<>>, 0, 10)),
     ok.

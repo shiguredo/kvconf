@@ -3,6 +3,8 @@
 -include("kvconf.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
+-import(kvconf, [get_value/1, unset_value/1]).
+
 
 smoke_test() ->
     {ok, Binary} = file:read_file(<<"test/smoke_test.conf">>),
@@ -69,6 +71,18 @@ smoke_test() ->
     ?assertEqual([{192, 0, 2, 1}, {192, 0, 2, 3}], get_value(list_ipv4)),
     ?assertEqual([{0,0,0,0,0,0,0,1}, {0,0,0,0,0,0,0,1}], get_value(list_ipv6)),
 
+    %% unsset
+    ?assertEqual(ok, unset_value(list_ipv4)),
+    ?assertEqual(not_found, get_value(list_ipv4)),
+
+    ok.
+
+
+unknown_type_test() ->
+    Line = <<"a = Vuls">>,
+    {error, {unknown_type, Line, 2}} = kvconf:initialize(
+                                          [#kvc{key = a, type = a}],
+                                          <<"\n", Line/binary, "\n">>),
     ok.
 
 
@@ -80,5 +94,10 @@ invalid_value_test() ->
     ok.
 
 
-get_value(Key) ->
-    kvconf:get_value(Key).
+missing_key_test() ->
+    Line = <<"a = Vuls">>,
+    {error, {missing_required_key, b, 4}} = kvconf:initialize(
+                                                 [#kvc{key = b, required = true, type = #kvc_boolean{}}],
+                                                 <<"\n", Line/binary, "\n">>),
+    ok.
+
