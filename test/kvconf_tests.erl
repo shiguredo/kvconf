@@ -3,12 +3,12 @@
 -include("kvconf.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
--import(kvconf, [get_value/1, unset_value/1]).
+-import(kvconf, [initialize/2, get_value/1, unset_value/1]).
 
 
 smoke_test() ->
     {ok, Binary} = file:read_file(<<"test/smoke_test.conf">>),
-    ok = kvconf:initialize(
+    ok = initialize(
            [#kvc{key = two_digits,   type = #kvc_integer{min = 10, max = 99}, required = true},
 
             #kvc{key = float_foo,    type = #kvc_float{min = -10, max = 10}, required = true},
@@ -71,7 +71,7 @@ smoke_test() ->
     ?assertEqual([{192, 0, 2, 1}, {192, 0, 2, 3}], get_value(list_ipv4)),
     ?assertEqual([{0,0,0,0,0,0,0,1}, {0,0,0,0,0,0,0,1}], get_value(list_ipv6)),
 
-    %% unsset
+    %% unset_value のテストをこっそりと
     ?assertEqual(ok, unset_value(list_ipv4)),
     ?assertEqual(not_found, get_value(list_ipv4)),
 
@@ -80,15 +80,15 @@ smoke_test() ->
 
 unknown_type_test() ->
     Line = <<"a = Vuls">>,
-    {error, {unknown_type, Line, 2}} = kvconf:initialize(
-                                          [#kvc{key = a, type = a}],
-                                          <<"\n", Line/binary, "\n">>),
+    {error, {unknown_type, Line, 2}} = initialize(
+                                         [#kvc{key = a, type = a}],
+                                         <<"\n", Line/binary, "\n">>),
     ok.
 
 
 invalid_value_test() ->
     Line = <<"a = Vuls">>,
-    {error, {invalid_value, Line, 2}} = kvconf:initialize(
+    {error, {invalid_value, Line, 2}} = initialize(
                                           [#kvc{key = a, type = #kvc_boolean{}}],
                                           <<"\n", Line/binary, "\n">>),
     ok.
@@ -96,8 +96,8 @@ invalid_value_test() ->
 
 missing_key_test() ->
     Line = <<"a = Vuls">>,
-    {error, {missing_required_key, b, 4}} = kvconf:initialize(
-                                                 [#kvc{key = b, required = true, type = #kvc_boolean{}}],
-                                                 <<"\n", Line/binary, "\n">>),
+    {error, {missing_required_key, b, 4}} = initialize(
+                                              [#kvc{key = b, required = true, type = #kvc_boolean{}}],
+                                              <<"\n", Line/binary, "\n">>),
     ok.
 
