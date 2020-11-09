@@ -3,28 +3,14 @@
 -export([initialize/2]).
 -export([set_value/2, unset_value/1, get_value/1]).
 
--export_type([key/0, type/0, required/0, definition/0]).
-
--type key() :: atom().
--type type() :: {atom, [atom() | {binary(), atom()}]} |
-                string | {integer, integer(), integer()} | boolean |
-                list_ipv4_address | list_ipv6_address | ipv4_address | ipv6_address |
-                host | port_number | http_uri.
--type required() :: required | optional.
--type definition() :: {key(), type(), required()} | {key(), type(), optional, term()}.
+-include("kvconf.hrl").
 
 
--spec initialize([definition()], binary()) -> ok | {error, {atom(), key(), any(), non_neg_integer()}}.
-initialize(Definitions, Binary) ->
-    ToInternatDefinition = fun({Key, Type, optional, DefaultValue}) ->
-                                   {Key, Type, {optional, DefaultValue}};
-                              ({Key, Type, Required}) ->
-                                   {Key, Type, Required}
-                           end,
-    InternalDefinitions = lists:map(ToInternatDefinition, Definitions),
+-spec initialize([#kvc{}], binary()) -> ok | {error, {atom(), key(), any(), non_neg_integer()}}.
+initialize(KvcList, Binary) ->
     case parse(Binary) of
         {ok, Configurations, LastLineNumber} ->
-            kvconf_validate:validate(LastLineNumber, Configurations, InternalDefinitions);
+            kvconf_validate:validate(LastLineNumber, Configurations, KvcList);
         {error, Reason} ->
             {error, Reason}
     end.

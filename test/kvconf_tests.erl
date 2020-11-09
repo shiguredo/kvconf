@@ -1,34 +1,49 @@
 -module(kvconf_tests).
 
+-include("kvconf.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
 
 smoke_test() ->
     {ok, Binary} = file:read_file(<<"test/smoke_test.conf">>),
     ok = kvconf:initialize(
-           [{two_digits,   {integer, 10, 99},            required                              },
-            {float_foo,    {float, -10, 10},             required                              },
-            {float_bar,    {float, -10, 10},             required                              },
-            {url,          http_uri,                     optional, <<"http://foo.example.com">>},
-            {atom_default, {atom, [foo, bar]},           optional, foo                         },
-            {atom_foo,     {atom, [foo, bar]},           optional, foo                         },
-            {atom_bar,     {atom, [foo, bar]},           optional, foo                         },
-            {atom_by_bin,  {atom, [{<<"Portrait">>, portrait}, {<<"Landscape">>, landscape}]},
-                                                         optional, landscape                   },
-            {atom_by_bin2, {atom, [{<<"A4">>, a4}, {<<"B4">>, b4}]},
-                                                         optional, a4                          },
-            {string,       string,                       optional, <<"bang">>                  },
-            {string2,      string,                       optional, <<"bang2">>                 },
-            {string3,      string,                       optional                              },
-            {empty_string, string,                       optional, <<"boom!!">>                },
-            {bool_true,    boolean,                      required                              },
-            {bool_false,   boolean,                      optional                              },
-            {bool_default, boolean,                      optional, true                        },
-            {ipv4,         ipv4_address,                 required                              },
-            {ipv6,         ipv6_address,                 required                              },
-            {list_ipv4,    list_ipv4_address,            optional, []                          },
-            {list_ipv6,    list_ipv6_address,            optional, []                          },
-            {ipv4_port,    ipv4_address_and_port_number, required                              }],
+           [#kvc{key = two_digits,   type = #kvc_integer{min = 10, max = 99}, required = true},
+
+            #kvc{key = float_foo,    type = #kvc_float{min = -10, max = 10}, required = true},
+            #kvc{key = float_bar,    type = #kvc_float{min = -10, max = 10}, required = true},
+
+            #kvc{key = url,          type = #kvc_http_uri{}, default = <<"http://foo.example.com">>},
+
+            #kvc{key = atom_default, type = #kvc_atom{candidates = [foo, bar]}, default = foo},
+            #kvc{key = atom_foo,     type = #kvc_atom{candidates = [foo, bar]}, default = foo},
+            #kvc{key = atom_bar,     type = #kvc_atom{candidates = [foo, bar]}, default = foo},
+            %% required = false を明示的にしてみる
+            #kvc{key = atom_by_bin,  type = #kvc_atom{candidates = [{<<"Portrait">>, portrait},
+                                                                    {<<"Landscape">>, landscape}]},
+                 required = false, default = landscape},
+            %% required = false を明示的にしてみる
+            #kvc{key = atom_by_bin2, type = #kvc_atom{candidates = [{<<"A4">>, a4}, {<<"B4">>, b4}]},
+                 required = false, default = a4},
+
+            #kvc{key = string,       type = #kvc_string{}, default = <<"bang">>},
+            #kvc{key = string2,      type = #kvc_string{}, default = <<"bang2">>},
+            #kvc{key = string3,      type = #kvc_string{}},
+            #kvc{key = empty_string, type = #kvc_string{}, default = <<"boom!!">>},
+
+            #kvc{key = bool_true,    type = #kvc_boolean{}, required = true},
+            #kvc{key = bool_false,   type = #kvc_boolean{}},
+            #kvc{key = bool_default, type = #kvc_boolean{}, default = true},
+
+            #kvc{key = port,         type = #kvc_port_number{}, default = 3000},
+
+            #kvc{key = ipv4,         type = #kvc_ipv4_address{}, required = true},
+
+            #kvc{key = ipv6,         type = #kvc_ipv6_address{}, required = true},
+
+            #kvc{key = list_ipv4,    type = #kvc_list_ipv4_address{}, default = []},
+
+            #kvc{key = list_ipv6,    type = #kvc_list_ipv6_address{}, default = []}
+           ],
            Binary),
 
     ?assertEqual(71, get_value(two_digits)),
@@ -45,11 +60,11 @@ smoke_test() ->
     ?assertEqual(bar, get_value(atom_bar)),
     ?assertEqual(landscape, get_value(atom_by_bin)),
     ?assertEqual(a4, get_value(atom_by_bin2)),
+    ?assertEqual(7777, get_value(port)),
     ?assertEqual(<<"foo bar baz">>, get_value(string)),
     ?assertEqual(<<"bang2">>, get_value(string2)),
     ?assertEqual(not_found, get_value(string3)),
     ?assertEqual(<<>>, get_value(empty_string)),
-    ?assertEqual({{127, 0, 0, 1}, 777}, get_value(ipv4_port)),
 
     ?assertEqual([{192, 0, 2, 1}, {192, 0, 2, 3}], get_value(list_ipv4)),
     ?assertEqual([{0,0,0,0,0,0,0,1}, {0,0,0,0,0,0,0,1}], get_value(list_ipv6)),
@@ -60,7 +75,7 @@ smoke_test() ->
 invalid_value_test() ->
     Line = <<"a = Vuls">>,
     {error, {invalid_value, Line, 2}} = kvconf:initialize(
-                                          [{a, boolean, optional}],
+                                          [#kvc{key = a, type = #kvc_boolean{}}],
                                           <<"\n", Line/binary, "\n">>),
     ok.
 
