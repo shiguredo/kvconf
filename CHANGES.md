@@ -12,6 +12,13 @@
 
 ## develop
 
+- [CHANGE] ipv4_address_and_port_number を削除
+    - @voluntas
+- [CHANGE] 定義を全て record 化する
+    - `#kvc{}` を利用する
+    - デフォルトを定義しない場合はかならず undefined になる
+    - @voluntas
+
 ## 2020.5
 
 - [ADD] atom に変換付きの設定記法を追加する
