@@ -4,74 +4,77 @@
 
 -include("kvconf.hrl").
 
+-include_lib("eunit/include/eunit.hrl").
 
--spec validate(non_neg_integer(), map(), [definition_internal()]) ->
-                      ok | {error, {atom(), any(), non_neg_integer()}}.
+
+-spec validate(non_neg_integer(), map(), [#kvc{}]) ->
+    ok | {error, {atom(), any(), non_neg_integer()}}.
 validate(_LastLineNumber, _Configurations, []) ->
     ok;
-validate(LastLineNumber, Configurations, [{Key, Type, Requirement} | DefinitionList]) ->
+validate(LastLineNumber, Configurations, [#kvc{key = Key} = Kvc | KvcList]) ->
     case maps:get(atom_to_binary(Key, utf8), Configurations, not_found) of
         not_found ->
-            case validate_one(Type, Requirement, not_found) of
+            %% default を引っ張り出す
+            case validate_one(Kvc) of
+                skip ->
+                    validate(LastLineNumber, Configurations, KvcList);
                 {ok, ValidatedValue} ->
                     ok = kvconf:set_value(Key, ValidatedValue),
-                    validate(LastLineNumber, Configurations, DefinitionList);
-                {error, skip} ->
-                    validate(LastLineNumber, Configurations, DefinitionList);
+                    validate(LastLineNumber, Configurations, KvcList);
                 Reason when is_atom(Reason) ->
                     %% 設定には存在しないので最後の行番号を入れる。
                     %% ファイルを最後まで探したけど駄目だった、という気持ち。
                     {error, {Reason, Key, LastLineNumber}}
             end;
         {Value, Line, LineNumber} ->
-            case validate_one(Type, Requirement, Value) of
+            case validate_one(Kvc, Value) of
                 {ok, ValidatedValue} ->
                     ok = kvconf:set_value(Key, ValidatedValue),
-                    validate(LastLineNumber, Configurations, DefinitionList);
+                    validate(LastLineNumber, Configurations, KvcList);
                 Reason when is_atom(Reason) ->
                     {error, {Reason, Line, LineNumber}}
             end
     end.
 
 
-validate_one(_Type, required, not_found) ->
-    {error, missing_required_key};
-validate_one(Type, required, Value) ->
+validate_one(#kvc{required = true}) ->
+    %% 値が必要なのに key がなかったのでエラー
+    missing_required_key;
+validate_one(#kvc{required = false, default = undefined}) ->
+    %% デフォルト値がない場合は何もしない
+    skip;
+validate_one(#kvc{required = false, default = Value}) ->
+    %% デフォルトの場合はそのまま返してしまう
+    {ok, Value}.
+
+
+validate_one(#kvc{required = true, type = Type}, Value) ->
     validate_type(Type, Value);
-validate_one(_Type, optional, not_found) ->
-    %% デフォルト値は何もしない
-    {error, skip};
-validate_one(Type, optional, Value) ->
-    validate_type(Type, Value);
-validate_one(_Type, {optional, DefaultValue}, not_found) ->
-    {ok, DefaultValue};
-validate_one(Type, {optional, _DefaultValue}, Value) ->
+validate_one(#kvc{required = false, type = Type}, Value) ->
     validate_type(Type, Value).
 
 
-validate_type({atom, Candidates}, Value) ->
+validate_type(#kvc_atom{candidates = Candidates}, Value) ->
     validate_atom(Value, Candidates);
-validate_type(string, Value) ->
+validate_type(#kvc_string{}, Value) ->
     validate_string(Value);
-validate_type({integer, Min, Max}, Value) ->
+validate_type(#kvc_integer{min = Min, max = Max}, Value) ->
     validate_integer(Value, Min, Max);
-validate_type({float, Min, Max}, Value) ->
+validate_type(#kvc_float{min = Min, max = Max}, Value) ->
     validate_float(Value, Min, Max);
-validate_type(list_ipv4_address, Value) ->
+validate_type(#kvc_list_ipv4_address{}, Value) ->
     validate_list_ipv4_address(Value);
-validate_type(list_ipv6_address, Value) ->
+validate_type(#kvc_list_ipv6_address{}, Value) ->
     validate_list_ipv6_address(Value);
-validate_type(ipv4_address, Value) ->
+validate_type(#kvc_ipv4_address{}, Value) ->
     validate_ipv4_address(Value);
-validate_type(ipv6_address, Value) ->
+validate_type(#kvc_ipv6_address{}, Value) ->
     validate_ipv6_address(Value);
-validate_type(ipv4_address_and_port_number, Value) ->
-    validate_ipv4_address_and_port_number(Value);
-validate_type(port_number, Value) ->
+validate_type(#kvc_port_number{}, Value) ->
     validate_port_number(Value);
-validate_type(boolean, Value) ->
+validate_type(#kvc_boolean{}, Value) ->
     validate_boolean(Value);
-validate_type(http_uri, Value) ->
+validate_type(#kvc_http_uri{}, Value) ->
     validate_http_uri(Value);
 validate_type(_UnknownType, _Value) ->
     unknown_type.
@@ -189,30 +192,6 @@ validate_ipv6_address(Value) ->
     end.
 
 
-validate_ipv4_address_and_port_number(Value) when is_binary(Value) ->
-    case binary:split(Value, <<":">>) of
-        [RawIpAddress, RawPort] ->
-            case inet:parse_ipv4strict_address(binary_to_list(RawIpAddress)) of
-                {ok, IpAddress} ->
-                    try binary_to_integer(RawPort) of
-                        Port when 0 =< Port andalso Port =< 65535 ->
-                            {ok, {IpAddress, Port}};
-                        _ ->
-                            invalid_value
-                    catch
-                        _:_ ->
-                            invalid_value
-                    end;
-                {error, _Reason} ->
-                    invalid_value
-            end;
-        _ ->
-            invalid_value
-    end;
-validate_ipv4_address_and_port_number(_Value) ->
-    invalid_value.
-
-
 validate_string(Value) when is_binary(Value) ->
     {ok, Value};
 validate_string(_Value) ->
@@ -233,8 +212,20 @@ validate_http_uri(Value) ->
 
 -include_lib("eunit/include/eunit.hrl").
 
+
+validate_atom_test() ->
+    ?assertEqual(invalid_value, validate_atom(<<"b">>, [a])),
+    ok.
+
+
 validate_integer_test() ->
     ?assertEqual(invalid_value, validate_integer(<<>>, 0, 10)),
+    ok.
+
+
+validate_one_test() ->
+    ?assertEqual({ok, foo},
+                 validate_one(#kvc{key = atom_default, type = #kvc_atom{candidates = [foo, bar]}, default = foo})),
     ok.
 
 
