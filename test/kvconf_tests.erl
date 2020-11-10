@@ -78,14 +78,6 @@ smoke_test() ->
     ok.
 
 
-unknown_type_test() ->
-    Line = <<"a = Vuls">>,
-    {error, {unknown_type, Line, 2}} = initialize(
-                                         [#kvc{key = a, type = a}],
-                                         <<"\n", Line/binary, "\n">>),
-    ok.
-
-
 invalid_value_test() ->
     Line = <<"a = Vuls">>,
     {error, {invalid_value, Line, 2}} = initialize(

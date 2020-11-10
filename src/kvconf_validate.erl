@@ -4,8 +4,6 @@
 
 -include("kvconf.hrl").
 
--include_lib("eunit/include/eunit.hrl").
-
 
 -spec validate(non_neg_integer(), map(), [#kvc{}]) ->
     ok | {error, {atom(), any(), non_neg_integer()}}.
@@ -77,8 +75,8 @@ validate_type(#kvc_boolean{}, Value) ->
     validate_boolean(Value);
 validate_type(#kvc_http_uri{}, Value) ->
     validate_http_uri(Value);
-validate_type(_UnknownType, _Value) ->
-    unknown_type.
+validate_type(#kvc_interval{min = Min, max = Max, out_time_unit = Unit}, Value) ->
+    validate_interval(Value, Min, Max, Unit).
 
 
 validate_atom(_Value, []) ->
@@ -117,6 +115,7 @@ validate_port_number(Value) ->
 
 
 %% default チェックの枝
+-spec validate_boolean(boolean() | binary()) -> {ok, boolean()} | invalid_value.
 validate_boolean(true) ->
     {ok, true};
 validate_boolean(false) ->
@@ -276,9 +275,103 @@ validate_http_uri(Value) ->
     end.
 
 
+-define(IN_TIME_UNIT, [<<"ms">>, <<"s">>, <<"min">>, <<"h">>]).
+
+%% TODO(v): infinity 対応
+%% #kvc_interval{min = {10, ms} , max = {1, sec}, out_unit = millisecond}
+validate_interval(Value, Min, Max, OutUnit) ->
+    case binary:match(Value, ?IN_TIME_UNIT) of
+        nomatch ->
+            invalid_value;
+        Found ->
+            RawInUnit = binary:part(Value, Found),
+            case binary:split(Value, ?IN_TIME_UNIT, [global, trim]) of
+                [RawInteger0] ->
+                    %% 1_000_000 を 1000000 に変換する
+                    RawInteger = binary:replace(RawInteger0, <<"_">>, <<>>, [global]),
+                    try
+                        Integer = binary_to_integer(RawInteger),
+                        InUnit = binary_to_existing_atom(RawInUnit),
+                        case validate_interval_min({Integer, InUnit}, Min) of
+                            ok ->
+                                case validate_interval_max({Integer, InUnit}, Max) of
+                                    ok ->
+                                        validate_interval_out_unit({Integer, InUnit}, OutUnit);
+                                    error ->
+                                        invalid_value
+                                end;
+                            error ->
+                                invalid_value
+                        end
+                    catch
+                        error:badarg ->
+                            invalid_value
+                    end;
+                _ ->
+                    invalid_value
+            end
+    end.
+
+
+validate_interval_min({Value0, InUnit0}, {Min0, MinUnit0}) ->
+    {Value, InUnit} = time_unit({Value0, InUnit0}),
+    {Min, MinUnit} = time_unit({Min0, MinUnit0}),
+    case erlang:convert_time_unit(Value, InUnit, MinUnit) of
+        ConvertedValue when Min =< ConvertedValue ->
+            ok;
+        _ ->
+            error
+    end.
+
+validate_interval_max({Value0, InUnit0}, {Max0, MaxUnit0}) ->
+    {Value, InUnit} = time_unit({Value0, InUnit0}),
+    {Max, MaxUnit} = time_unit({Max0, MaxUnit0}),
+    case erlang:convert_time_unit(Value, InUnit, MaxUnit) of
+        ConvertedValue when ConvertedValue =< Max ->
+            ok;
+        _ ->
+            error
+    end.
+
+
+validate_interval_out_unit({Value0, InUnit0}, OutUnit) ->
+    {Value, InUnit} = time_unit({Value0, InUnit0}),
+    erlang:convert_time_unit(Value, InUnit, OutUnit).
+
+
+time_unit({Integer, us}) ->
+    {Integer, microsecond};
+time_unit({Integer, ms}) ->
+    {Integer, millisecond};
+time_unit({Integer, s}) ->
+    {Integer, second};
+time_unit({Integer, min}) ->
+    {Integer * 60, second};
+time_unit({Integer, h}) ->
+    {Integer * 60 * 60, second}.
+
+
 -ifdef(TEST).
 
 -include_lib("eunit/include/eunit.hrl").
+
+
+validate_interval_test() ->
+    ?assertEqual(invalid_value,
+                 validate_interval(<<"120s">>, {0, ms}, {1, min}, millisecond)),
+    ?assertEqual(120_000,
+                 validate_interval(<<"120s">>, {0, ms}, {2, min}, millisecond)),
+    ?assertEqual(120,
+                 validate_interval(<<"120ms">>, {0, ms}, {2, min}, millisecond)),
+    ?assertEqual(7_200_000,
+                 validate_interval(<<"120min">>, {100, min}, {120, min}, millisecond)),
+    ?assertEqual(invalid_value,
+                 validate_interval(<<"120">>, {121, min}, {130, min}, millisecond)),
+    ?assertEqual(invalid_value,
+                 validate_interval(<<"120min">>, {100, min}, {119, min}, millisecond)),
+    ?assertEqual(432_000,
+                 validate_interval(<<"120h">>, {0, ms}, {120, h}, second)),
+    ok.
 
 
 validate_atom_test() ->
@@ -290,6 +383,36 @@ validate_atom_test() ->
 validate_integer_test() ->
     ?assertEqual(invalid_value, validate_integer(<<>>, 0, 10)),
     ok.
+
+
+validate_ipv4_address_test() ->
+    ?assertEqual(invalid_value, validate_ipv4_address({1,2,3})),
+    ?assertEqual(invalid_value, validate_ipv4_address({1,2,3,444})),
+    ?assertEqual({ok, {1,2,3,4}}, validate_ipv4_address({1,2,3,4})),
+    ok.
+
+
+validate_ipv6_address_test() ->
+    ?assertEqual(invalid_value, validate_ipv6_address({1,2,3})),
+    ?assertEqual(invalid_value, validate_ipv6_address({1,2,3,4})),
+    ?assertEqual({ok, {1,2,3,4,1,2,3,4}}, validate_ipv6_address({1,2,3,4,1,2,3,4})),
+    ok.
+
+
+
+validate_list_ipv4_address_test() ->
+    ?assertEqual(invalid_value, validate_list_ipv4_address([{1,2,3}])),
+    ?assertEqual(invalid_value, validate_list_ipv4_address([{1,2,3,4}, {1,2,3}])),
+    ?assertEqual({ok, [{1,2,3,4}]}, validate_list_ipv4_address([{1,2,3,4}])),
+    ok.
+
+
+validate_list_ipv6_address_test() ->
+    ?assertEqual(invalid_value, validate_list_ipv6_address([{1,2,3,4,1,2,3}])),
+    ?assertEqual(invalid_value, validate_list_ipv6_address([{1,2,3,4,1,2,3}, {1,2,3}])),
+    ?assertEqual({ok, [{1,2,3,4,1,2,3,4}]}, validate_list_ipv6_address([{1,2,3,4,1,2,3,4}])),
+    ok.
+
 
 
 validate_one_test() ->
