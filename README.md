@@ -17,7 +17,7 @@ key = value
 
 ```erlang
 [
-    #kvc{key = a, type = #kvc_atom{candidates = [x,y,z}, default = x},
+    #kvc{key = a, type = #kvc_atom{candidates = [x,y,z]}, default = x},
     #kvc{key = b, type = #kvc_string{}, required = true},
     #kvc{key = c, type = #kvc_interval{min = {10, s}, max = {30, s}, out_time_unit = millisecond}, deafult = {20, s}},
     #kvc{key = d, type = #kvc_integer{min = 10, max = 100}},
