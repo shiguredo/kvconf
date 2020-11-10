@@ -1,3 +1,5 @@
+-include_lib("eunit/include/eunit.hrl").
+
 -record(kvc_atom, {
           candidates :: [atom() | {binary(), atom()}]
          }).
@@ -36,23 +38,21 @@
 -record(kvc_http_uri, {
          }).
 
+
+%% 入力を許可する値の単位
+-type in_time_unit() :: ms | s | min | h.
+-type out_time_unit() :: second | millisecond | microsecond.
+
 -record(kvc_interval, {
-          min :: non_neg_integer(),
-          max :: non_neg_integer(),
-          unit :: us | ms | s | min | h | d | y,
-          default :: undefined | non_neg_integer()
+          min :: {non_neg_integer(), in_time_unit()},
+          max :: {non_neg_integer(), in_time_unit()} | infinity,
+          out_time_unit :: out_time_unit()
          }).
 
 
--type key() :: atom().
--type type() :: #kvc_atom{} | #kvc_string{} | #kvc_integer{} | #kvc_float{} |
-                #kvc_boolean{} | #kvc_ipv4_address{} | #kvc_ipv6_address{} |
-                #kvc_list_ipv4_address{} | #kvc_list_ipv6_address{} |
-                #kvc_port_number{} | #kvc_http_uri{} | #kvc_interval{}.
-
 -record(kvc, {
-          key :: key(),
-          type :: type(),
+          key :: kvconf:key(),
+          type :: kvconf:type(),
           required = false :: boolean(),
           default = undefined :: any()
          }).

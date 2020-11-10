@@ -3,7 +3,15 @@
 -export([initialize/2]).
 -export([set_value/2, unset_value/1, get_value/1]).
 
+-export_type([key/0, type/0]).
+
 -include("kvconf.hrl").
+
+-type key() :: atom().
+-type type() :: #kvc_atom{} | #kvc_string{} | #kvc_integer{} | #kvc_float{} |
+                #kvc_boolean{} | #kvc_ipv4_address{} | #kvc_ipv6_address{} |
+                #kvc_list_ipv4_address{} | #kvc_list_ipv6_address{} |
+                #kvc_port_number{} | #kvc_http_uri{} | #kvc_interval{}.
 
 
 -spec initialize([#kvc{}], binary()) -> ok | {error, {atom(), key(), any(), non_neg_integer()}}.
