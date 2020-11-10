@@ -54,5 +54,5 @@
           key :: key(),
           type :: type(),
           required = false :: boolean(),
-          default :: any()
+          default = undefined :: any()
          }).
