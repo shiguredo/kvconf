@@ -373,6 +373,7 @@ validate_interval_test() ->
                  validate_interval(<<"120h">>, {0, ms}, {120, h}, second)),
     ok.
 
+
 validate_atom_test() ->
     ?assertEqual(invalid_value, validate_atom(<<"b">>, [a])),
     ?assertEqual({ok, a}, validate_atom(a, [a])),
@@ -382,6 +383,36 @@ validate_atom_test() ->
 validate_integer_test() ->
     ?assertEqual(invalid_value, validate_integer(<<>>, 0, 10)),
     ok.
+
+
+validate_ipv4_address_test() ->
+    ?assertEqual(invalid_value, validate_ipv4_address({1,2,3})),
+    ?assertEqual(invalid_value, validate_ipv4_address({1,2,3,444})),
+    ?assertEqual({ok, {1,2,3,4}}, validate_ipv4_address({1,2,3,4})),
+    ok.
+
+
+validate_ipv6_address_test() ->
+    ?assertEqual(invalid_value, validate_ipv6_address({1,2,3})),
+    ?assertEqual(invalid_value, validate_ipv6_address({1,2,3,4})),
+    ?assertEqual({ok, {1,2,3,4,1,2,3,4}}, validate_ipv6_address({1,2,3,4,1,2,3,4})),
+    ok.
+
+
+
+validate_list_ipv4_address_test() ->
+    ?assertEqual(invalid_value, validate_list_ipv4_address([{1,2,3}])),
+    ?assertEqual(invalid_value, validate_list_ipv4_address([{1,2,3,4}, {1,2,3}])),
+    ?assertEqual({ok, [{1,2,3,4}]}, validate_list_ipv4_address([{1,2,3,4}])),
+    ok.
+
+
+validate_list_ipv6_address_test() ->
+    ?assertEqual(invalid_value, validate_list_ipv6_address([{1,2,3,4,1,2,3}])),
+    ?assertEqual(invalid_value, validate_list_ipv6_address([{1,2,3,4,1,2,3}, {1,2,3}])),
+    ?assertEqual({ok, [{1,2,3,4,1,2,3,4}]}, validate_list_ipv6_address([{1,2,3,4,1,2,3,4}])),
+    ok.
+
 
 
 validate_one_test() ->
