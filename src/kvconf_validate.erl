@@ -76,9 +76,7 @@ validate_type(#kvc_boolean{}, Value) ->
 validate_type(#kvc_http_uri{}, Value) ->
     validate_http_uri(Value);
 validate_type(#kvc_interval{min = Min, max = Max, out_time_unit = Unit}, Value) ->
-    validate_interval(Value, Min, Max, Unit);
-validate_type(_UnknownType, _Value) ->
-    unknown_type.
+    validate_interval(Value, Min, Max, Unit).
 
 
 validate_atom(_Value, []) ->
