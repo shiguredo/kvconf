@@ -1,17 +1,31 @@
 # kvconf
 
+kvconf は Erlang アプリケーション時に Erlang Term を設定ファイルに疲れた人のための仕組みです。
+設定ファイルに対するバリデーションを Erlang のレコードを利用して定義することができるため Dialyzer の恩恵を受けることができます。
+
 ## 設定ファイル例
 
 ```
 etc/app.conf
 ```
 
-```
+```ini
 key = value
 ```
 
-## ライセンス
+## 設定定義例
 
+```erlang
+[
+    #kvc{key = a, type = #kvc_atom{candidates = [x,y,z}, default = x},
+    #kvc{key = b, type = #kvc_string{}, required = true},
+    #kvc{key = c, type = #kvc_interval{min = {10, s}, max = {30, s}, out_time_unit = millisecond}, deafult = {20, s}},
+    #kvc{key = d, type = #kvc_integer{min = 10, max = 100}},
+    #kvc{key = e, type = #kvc_boolean{}, default = true}
+]
+```
+
+## ライセンス
 
 ```
 Copyright 2019-2020, Shiguredo Inc.

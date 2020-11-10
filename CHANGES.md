@@ -12,11 +12,18 @@
 
 ## develop
 
+## 2020.9
+
+- [ADD] `#kvc_interval{}` のデフォルト対応を追加
+    - `{100, s}` や `{100, min}` といったように指定可能
+    - @voluntas
+
 ## 2020.8
 
 - [ADD] `#kvc_interval{}` を追加
     - `key = 100s` や `key = 100min` といった値を指定可能にする
     - erlang 側では out_unit で好きな単位に変更可能
+    - @voluntas
 
 ## 2020.7
 

@@ -279,7 +279,20 @@ validate_http_uri(Value) ->
 
 %% TODO(v): infinity 対応
 %% #kvc_interval{min = {10, ms} , max = {1, sec}, out_unit = millisecond}
-validate_interval(Value, Min, Max, OutUnit) ->
+validate_interval({Value, InUnit}, Min, Max, OutUnit)
+  when is_integer(Value) andalso is_atom(InUnit) ->
+    case validate_interval_min({Value, InUnit}, Min) of
+        ok ->
+            case validate_interval_max({Value, InUnit}, Max) of
+                ok ->
+                    validate_interval_out_unit({Value, InUnit}, OutUnit);
+                error ->
+                    invalid_value
+            end;
+        error ->
+            invalid_value
+    end;
+validate_interval(Value, Min, Max, OutUnit) when is_binary(Value) ->
     case binary:match(Value, ?IN_TIME_UNIT) of
         nomatch ->
             invalid_value;
@@ -371,6 +384,15 @@ validate_interval_test() ->
                  validate_interval(<<"120min">>, {100, min}, {119, min}, millisecond)),
     ?assertEqual(432_000,
                  validate_interval(<<"120h">>, {0, ms}, {120, h}, second)),
+
+    %% default テスト
+    ?assertEqual(7_200_000,
+                 validate_interval({120, min}, {100, min}, {120, min}, millisecond)),
+    ?assertEqual(432_000,
+                 validate_interval({120, h}, {0, ms}, {120, h}, second)),
+    ?assertEqual(invalid_value,
+                 validate_interval({120, min}, {100, min}, {119, min}, millisecond)),
+
     ok.
 
 

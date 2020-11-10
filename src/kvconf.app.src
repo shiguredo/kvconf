@@ -1,6 +1,6 @@
 {application, kvconf,
  [{description, "kvconf"},
-  {vsn, "2020.8"},
+  {vsn, "2020.9"},
   {registered, []},
   {applications, [
                   kernel,
