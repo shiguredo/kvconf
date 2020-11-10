@@ -12,6 +12,10 @@
 
 ## develop
 
+- [ADD] `#kvc_interval{}` を追加
+    - `key = 100s` や `key = 100min` といった値を指定可能にする
+    - erlang 側では out_unit で好きな単位に変更可能
+
 ## 2020.7
 
 - [UPDATE] デフォルトの値も型チェックするようにする
