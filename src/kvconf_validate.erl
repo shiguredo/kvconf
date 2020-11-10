@@ -349,7 +349,7 @@ validate_interval_max({Value0, InUnit0}, {Max0, MaxUnit0}) ->
 
 validate_interval_out_unit({Value0, InUnit0}, OutUnit) ->
     {Value, InUnit} = time_unit({Value0, InUnit0}),
-    erlang:convert_time_unit(Value, InUnit, OutUnit).
+    {ok, erlang:convert_time_unit(Value, InUnit, OutUnit)}.
 
 
 time_unit({Integer, us}) ->
@@ -372,23 +372,23 @@ time_unit({Integer, h}) ->
 validate_interval_test() ->
     ?assertEqual(invalid_value,
                  validate_interval(<<"120s">>, {0, ms}, {1, min}, millisecond)),
-    ?assertEqual(120_000,
+    ?assertEqual({ok, 120_000},
                  validate_interval(<<"120s">>, {0, ms}, {2, min}, millisecond)),
-    ?assertEqual(120,
+    ?assertEqual({ok, 120},
                  validate_interval(<<"120ms">>, {0, ms}, {2, min}, millisecond)),
-    ?assertEqual(7_200_000,
+    ?assertEqual({ok, 7_200_000},
                  validate_interval(<<"120min">>, {100, min}, {120, min}, millisecond)),
     ?assertEqual(invalid_value,
                  validate_interval(<<"120">>, {121, min}, {130, min}, millisecond)),
     ?assertEqual(invalid_value,
                  validate_interval(<<"120min">>, {100, min}, {119, min}, millisecond)),
-    ?assertEqual(432_000,
+    ?assertEqual({ok, 432_000},
                  validate_interval(<<"120h">>, {0, ms}, {120, h}, second)),
 
     %% default テスト
-    ?assertEqual(7_200_000,
+    ?assertEqual({ok, 7_200_000},
                  validate_interval({120, min}, {100, min}, {120, min}, millisecond)),
-    ?assertEqual(432_000,
+    ?assertEqual({ok, 432_000},
                  validate_interval({120, h}, {0, ms}, {120, h}, second)),
     ?assertEqual(invalid_value,
                  validate_interval({120, min}, {100, min}, {119, min}, millisecond)),

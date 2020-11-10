@@ -12,6 +12,11 @@
 
 ## develop
 
+## 2020.9.1
+
+- [FIX] `#kvc_interval{}` 利用時の戻り値を {ok, non_neg_integer()} に修正する
+    - @voluntas
+
 ## 2020.9
 
 - [ADD] `#kvc_interval{}` のデフォルト対応を追加
