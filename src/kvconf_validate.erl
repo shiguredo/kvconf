@@ -279,6 +279,11 @@ validate_http_uri(Value) ->
 
 %% TODO(v): infinity 対応
 %% #kvc_interval{min = {10, ms} , max = {1, sec}, out_unit = millisecond}
+-spec validate_interval({non_neg_integer(), kvconf:in_time_unit()} | binary(),
+                        {non_neg_integer(), kvconf:in_time_unit()},
+                        {non_neg_integer(), kvconf:in_time_unit()},
+                        kvconf:out_time_unit()) ->
+    {ok, non_neg_integer()} | invalid_value.
 validate_interval({Value, InUnit}, Min, Max, OutUnit)
   when is_integer(Value) andalso is_atom(InUnit) ->
     case validate_interval_min({Value, InUnit}, Min) of
@@ -408,14 +413,11 @@ validate_integer_test() ->
 
 
 validate_ipv4_address_test() ->
-    ?assertEqual(invalid_value, validate_ipv4_address({1,2,3})),
-    ?assertEqual(invalid_value, validate_ipv4_address({1,2,3,444})),
     ?assertEqual({ok, {1,2,3,4}}, validate_ipv4_address({1,2,3,4})),
     ok.
 
 
 validate_ipv6_address_test() ->
-    ?assertEqual(invalid_value, validate_ipv6_address({1,2,3})),
     ?assertEqual(invalid_value, validate_ipv6_address({1,2,3,4})),
     ?assertEqual({ok, {1,2,3,4,1,2,3,4}}, validate_ipv6_address({1,2,3,4,1,2,3,4})),
     ok.
