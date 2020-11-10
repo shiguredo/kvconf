@@ -12,6 +12,10 @@
 
 ## develop
 
+- [UPDATE] デフォルトの値も型チェックするようにする
+    - デフォルトには **期待値** を入れるのでデフォルトの値専用のチェックを追加している
+    - @voluntas
+
 ## 2020.6
 
 - [CHANGE] ipv4_address_and_port_number を削除
