@@ -42,10 +42,11 @@ validate_one(#kvc{required = true}) ->
     missing_required_key;
 validate_one(#kvc{required = false, default = undefined}) ->
     %% デフォルト値がない場合は何もしない
+    %% 取り出したときに not_found が返ってくるのでそれを処理すること
     skip;
-validate_one(#kvc{required = false, default = Value}) ->
-    %% デフォルトの場合はそのまま返してしまう
-    {ok, Value}.
+validate_one(#kvc{required = false, type = Type, default = Value}) ->
+    %% デフォルトも型チェックする
+    validate_type(Type, Value).
 
 
 validate_one(#kvc{required = true, type = Type}, Value) ->
@@ -82,6 +83,24 @@ validate_type(_UnknownType, _Value) ->
 
 validate_atom(_Value, []) ->
     invalid_value;
+
+%% default チェックの枝
+validate_atom(Value, Candidates) when is_atom(Value) ->
+    F = fun({_, Candidate}) when Candidate =:= Value ->
+                true;
+           (Candidate) when Candidate =:= Value ->
+                true;
+           (_) ->
+                false
+        end,
+    case lists:any(F, Candidates) of
+        true ->
+            {ok, Value};
+        _ ->
+            invalid_value
+    end;
+validate_atom(Value, [{Value, Candidate} | _Candidates]) when is_atom(Candidate) ->
+    {ok, Candidate};
 validate_atom(Value, [Candidate | Candidates]) when is_atom(Candidate) ->
     case atom_to_binary(Candidate, utf8) of
         Value ->
@@ -89,8 +108,6 @@ validate_atom(Value, [Candidate | Candidates]) when is_atom(Candidate) ->
         _ ->
             validate_atom(Value, Candidates)
     end;
-validate_atom(Value, [{Value, Candidate} | _Candidates]) when is_atom(Candidate) ->
-    {ok, Candidate};
 validate_atom(Value, [_ | Candidates]) ->
     validate_atom(Value, Candidates).
 
@@ -99,6 +116,11 @@ validate_port_number(Value) ->
     validate_integer(Value, 0, 65535).
 
 
+%% default チェックの枝
+validate_boolean(true) ->
+    {ok, true};
+validate_boolean(false) ->
+    {ok, false};
 validate_boolean(<<"true">>) ->
     {ok, true};
 validate_boolean(<<"false">>) ->
@@ -143,6 +165,14 @@ validate_float(_Value, _Min, _Max) ->
     invalid_value.
 
 
+validate_ipv4_address(Value0) when is_tuple(Value0) ->
+    %% これは {1,2,3,4444} とかも通してしまうのでちゃんとチェックする
+    case inet:ntoa(Value0) of
+        {error, einval} ->
+            invalid_value;
+        Value ->
+            validate_ipv4_address(list_to_binary(Value))
+    end;
 validate_ipv4_address(Value) ->
     case inet:parse_ipv4strict_address(binary_to_list(Value)) of
         {ok, IpAddress} ->
@@ -152,9 +182,41 @@ validate_ipv4_address(Value) ->
     end.
 
 
-validate_list_ipv4_address(Value) ->
+validate_ipv6_address(Value0) when is_tuple(Value0) ->
+    case inet:ntoa(Value0) of
+        {error, einval} ->
+            invalid_value;
+        Value ->
+            validate_ipv6_address(list_to_binary(Value))
+    end;
+validate_ipv6_address(Value) ->
+    case inet:parse_ipv6strict_address(binary_to_list(Value)) of
+        {ok, IpAddress} ->
+            {ok, IpAddress};
+        {error, _Reason} ->
+            invalid_value
+    end.
+
+
+validate_list_ipv4_address(Value) when is_binary(Value) ->
     RawListIpAddress = binary:split(Value, [<<",">>, <<$\s>>], [trim_all, global]),
-    validate_list_ipv4_address0(RawListIpAddress, []).
+    validate_list_ipv4_address0(RawListIpAddress, []);
+%% デフォルトチェック
+validate_list_ipv4_address(Value) when is_list(Value) ->
+    F = fun(IpAddress) ->
+                case validate_ipv4_address(IpAddress) of
+                    invalid_value ->
+                        false;
+                    _ ->
+                        true
+                end
+        end,
+    case lists:all(F, Value) of
+        true ->
+            {ok, Value};
+        false ->
+            invalid_value
+    end.
 
 validate_list_ipv4_address0([], Acc) ->
     {ok, lists:reverse(Acc)};
@@ -167,9 +229,25 @@ validate_list_ipv4_address0([Value|Rest], Acc) ->
     end.
 
 
-validate_list_ipv6_address(Value) ->
+validate_list_ipv6_address(Value) when is_binary(Value) ->
     RawListIpAddress = binary:split(Value, [<<",">>, <<$\s>>], [trim_all, global]),
-    validate_list_ipv6_address0(RawListIpAddress, []).
+    validate_list_ipv6_address0(RawListIpAddress, []);
+%% デフォルトチェック
+validate_list_ipv6_address(Value) when is_list(Value) ->
+    F = fun(IpAddress) ->
+                case validate_ipv6_address(IpAddress) of
+                    invalid_value ->
+                        false;
+                    _ ->
+                        true
+                end
+        end,
+    case lists:all(F, Value) of
+        true ->
+            {ok, Value};
+        false ->
+            invalid_value
+    end.
 
 validate_list_ipv6_address0([], Acc) ->
     {ok, lists:reverse(Acc)};
@@ -178,16 +256,6 @@ validate_list_ipv6_address0([Value|Rest], Acc) ->
         {ok, IpAddress} ->
             validate_list_ipv6_address0(Rest, [IpAddress|Acc]);
         invalid_value ->
-            invalid_value
-    end.
-
-
-
-validate_ipv6_address(Value) ->
-    case inet:parse_ipv6strict_address(binary_to_list(Value)) of
-        {ok, IpAddress} ->
-            {ok, IpAddress};
-        {error, _Reason} ->
             invalid_value
     end.
 
@@ -215,6 +283,7 @@ validate_http_uri(Value) ->
 
 validate_atom_test() ->
     ?assertEqual(invalid_value, validate_atom(<<"b">>, [a])),
+    ?assertEqual({ok, a}, validate_atom(a, [a])),
     ok.
 
 
