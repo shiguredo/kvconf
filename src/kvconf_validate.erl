@@ -279,6 +279,11 @@ validate_http_uri(Value) ->
 
 %% TODO(v): infinity 対応
 %% #kvc_interval{min = {10, ms} , max = {1, sec}, out_unit = millisecond}
+-spec validate_interval({non_neg_integer(), kvconf:in_time_unit()} | binary(),
+                        {non_neg_integer(), kvconf:in_time_unit()},
+                        {non_neg_integer(), kvconf:in_time_unit()},
+                        kvconf:out_time_unit()) ->
+    {ok, non_neg_integer()} | invalid_value.
 validate_interval({Value, InUnit}, Min, Max, OutUnit)
   when is_integer(Value) andalso is_atom(InUnit) ->
     case validate_interval_min({Value, InUnit}, Min) of
@@ -349,7 +354,7 @@ validate_interval_max({Value0, InUnit0}, {Max0, MaxUnit0}) ->
 
 validate_interval_out_unit({Value0, InUnit0}, OutUnit) ->
     {Value, InUnit} = time_unit({Value0, InUnit0}),
-    erlang:convert_time_unit(Value, InUnit, OutUnit).
+    {ok, erlang:convert_time_unit(Value, InUnit, OutUnit)}.
 
 
 time_unit({Integer, us}) ->
@@ -372,23 +377,23 @@ time_unit({Integer, h}) ->
 validate_interval_test() ->
     ?assertEqual(invalid_value,
                  validate_interval(<<"120s">>, {0, ms}, {1, min}, millisecond)),
-    ?assertEqual(120_000,
+    ?assertEqual({ok, 120_000},
                  validate_interval(<<"120s">>, {0, ms}, {2, min}, millisecond)),
-    ?assertEqual(120,
+    ?assertEqual({ok, 120},
                  validate_interval(<<"120ms">>, {0, ms}, {2, min}, millisecond)),
-    ?assertEqual(7_200_000,
+    ?assertEqual({ok, 7_200_000},
                  validate_interval(<<"120min">>, {100, min}, {120, min}, millisecond)),
     ?assertEqual(invalid_value,
                  validate_interval(<<"120">>, {121, min}, {130, min}, millisecond)),
     ?assertEqual(invalid_value,
                  validate_interval(<<"120min">>, {100, min}, {119, min}, millisecond)),
-    ?assertEqual(432_000,
+    ?assertEqual({ok, 432_000},
                  validate_interval(<<"120h">>, {0, ms}, {120, h}, second)),
 
     %% default テスト
-    ?assertEqual(7_200_000,
+    ?assertEqual({ok, 7_200_000},
                  validate_interval({120, min}, {100, min}, {120, min}, millisecond)),
-    ?assertEqual(432_000,
+    ?assertEqual({ok, 432_000},
                  validate_interval({120, h}, {0, ms}, {120, h}, second)),
     ?assertEqual(invalid_value,
                  validate_interval({120, min}, {100, min}, {119, min}, millisecond)),
@@ -408,14 +413,11 @@ validate_integer_test() ->
 
 
 validate_ipv4_address_test() ->
-    ?assertEqual(invalid_value, validate_ipv4_address({1,2,3})),
-    ?assertEqual(invalid_value, validate_ipv4_address({1,2,3,444})),
     ?assertEqual({ok, {1,2,3,4}}, validate_ipv4_address({1,2,3,4})),
     ok.
 
 
 validate_ipv6_address_test() ->
-    ?assertEqual(invalid_value, validate_ipv6_address({1,2,3})),
     ?assertEqual(invalid_value, validate_ipv6_address({1,2,3,4})),
     ?assertEqual({ok, {1,2,3,4,1,2,3,4}}, validate_ipv6_address({1,2,3,4,1,2,3,4})),
     ok.

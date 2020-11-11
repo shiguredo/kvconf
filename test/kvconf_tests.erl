@@ -36,6 +36,10 @@ smoke_test() ->
             #kvc{key = bool_false,   type = #kvc_boolean{}},
             #kvc{key = bool_default, type = #kvc_boolean{}, default = true},
 
+            #kvc{key = interval_ms,
+                 type = #kvc_interval{min = {10, ms}, max = {100, ms}, out_time_unit = millisecond},
+                 default = {50, ms}},
+
             #kvc{key = port,         type = #kvc_port_number{}, default = 3000},
 
             #kvc{key = ipv4,         type = #kvc_ipv4_address{}, required = true},

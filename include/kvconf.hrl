@@ -39,14 +39,10 @@
          }).
 
 
-%% 入力を許可する値の単位
--type in_time_unit() :: ms | s | min | h.
--type out_time_unit() :: second | millisecond | microsecond.
-
 -record(kvc_interval, {
-          min :: {non_neg_integer(), in_time_unit()},
-          max :: {non_neg_integer(), in_time_unit()} | infinity,
-          out_time_unit :: out_time_unit()
+          min :: {non_neg_integer(), kvconf:in_time_unit()},
+          max :: {non_neg_integer(), kvconf:in_time_unit()} | infinity,
+          out_time_unit :: kvconf:out_time_unit()
          }).
 
 
