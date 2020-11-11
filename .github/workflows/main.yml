@@ -12,7 +12,7 @@ jobs:
       image: shiguredo/erlang:otp-23.1.2-ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - run: make test
+      - run: make compile dialyzer test
       - name: Slack Notification
         if: failure()
         uses: rtCamp/action-slack-notify@v2.1.0
