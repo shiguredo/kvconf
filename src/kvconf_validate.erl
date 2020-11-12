@@ -275,7 +275,7 @@ validate_http_uri(Value) ->
     end.
 
 
--define(IN_TIME_UNIT, [<<"ms">>, <<"s">>, <<"min">>, <<"h">>]).
+-define(IN_TIME_UNIT, [ms, s, min, h]).
 
 %% TODO(v): infinity 対応
 %% #kvc_interval{min = {10, ms} , max = {1, sec}, out_unit = millisecond}
@@ -298,18 +298,15 @@ validate_interval({Value, InUnit}, Min, Max, OutUnit)
             invalid_value
     end;
 validate_interval(Value, Min, Max, OutUnit) when is_binary(Value) ->
-    case binary:match(Value, ?IN_TIME_UNIT) of
-        nomatch ->
-            invalid_value;
-        Found ->
-            RawInUnit = binary:part(Value, Found),
-            case binary:split(Value, ?IN_TIME_UNIT, [global, trim]) of
-                [RawInteger0] ->
-                    %% 1_000_000 を 1000000 に変換する
-                    RawInteger = binary:replace(RawInteger0, <<"_">>, <<>>, [global]),
-                    try
+    case binary:split(Value, [<<$\s>>], [global, trim_all]) of
+        [RawInteger0, RawInUnit] ->
+            try
+                InUnit = binary_to_existing_atom(RawInUnit),
+                case lists:member(InUnit, ?IN_TIME_UNIT) of
+                    true ->
+                        %% 1_000_000 を 1000000 に変換する
+                        RawInteger = binary:replace(RawInteger0, <<"_">>, <<>>, [global]),
                         Integer = binary_to_integer(RawInteger),
-                        InUnit = binary_to_existing_atom(RawInUnit),
                         case validate_interval_min({Integer, InUnit}, Min) of
                             ok ->
                                 case validate_interval_max({Integer, InUnit}, Max) of
@@ -320,14 +317,16 @@ validate_interval(Value, Min, Max, OutUnit) when is_binary(Value) ->
                                 end;
                             error ->
                                 invalid_value
-                        end
-                    catch
-                        error:badarg ->
-                            invalid_value
-                    end;
-                _ ->
+                        end;
+                    false ->
+                        invalid_value
+                end
+            catch
+                error:badarg ->
                     invalid_value
-            end
+            end;
+        _ ->
+            invalid_value
     end.
 
 
@@ -376,19 +375,23 @@ time_unit({Integer, h}) ->
 
 validate_interval_test() ->
     ?assertEqual(invalid_value,
-                 validate_interval(<<"120s">>, {0, ms}, {1, min}, millisecond)),
+                 validate_interval(<<"120 s">>, {0, ms}, {1, min}, millisecond)),
     ?assertEqual({ok, 120_000},
-                 validate_interval(<<"120s">>, {0, ms}, {2, min}, millisecond)),
+                 validate_interval(<<"120 s">>, {0, ms}, {2, min}, millisecond)),
     ?assertEqual({ok, 120},
-                 validate_interval(<<"120ms">>, {0, ms}, {2, min}, millisecond)),
+                 validate_interval(<<"120 ms">>, {0, ms}, {2, min}, millisecond)),
     ?assertEqual({ok, 7_200_000},
-                 validate_interval(<<"120min">>, {100, min}, {120, min}, millisecond)),
+                 validate_interval(<<"120 min">>, {100, min}, {120, min}, millisecond)),
     ?assertEqual(invalid_value,
                  validate_interval(<<"120">>, {121, min}, {130, min}, millisecond)),
     ?assertEqual(invalid_value,
-                 validate_interval(<<"120min">>, {100, min}, {119, min}, millisecond)),
+                 validate_interval(<<"120 min">>, {100, min}, {119, min}, millisecond)),
     ?assertEqual({ok, 432_000},
-                 validate_interval(<<"120h">>, {0, ms}, {120, h}, second)),
+                 validate_interval(<<"120 h">>, {0, ms}, {120, h}, second)),
+
+    %% 数値と単位の間にスペースがないのでエラー
+    ?assertEqual(invalid_value,
+                 validate_interval(<<"120s">>, {0, ms}, {2, min}, millisecond)),
 
     %% default テスト
     ?assertEqual({ok, 7_200_000},
