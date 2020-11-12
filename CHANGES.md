@@ -12,6 +12,14 @@
 
 ## develop
 
+## 2020.10
+
+- [CHANGE] `#kvc_interval{}` の単位を指定する場合は間にスペースをいれる ``10 s``
+    - ``数値と単位を分割するために空白（space）を用いる``
+
+      - https://ja.wikipedia.org/wiki/%E5%9B%BD%E9%9A%9B%E5%8D%98%E4%BD%8D%E7%B3%BB
+    - @voluntas
+
 ## 2020.9.1
 
 - [FIX] `#kvc_interval{}` 利用時の戻り値を {ok, non_neg_integer()} に修正する
