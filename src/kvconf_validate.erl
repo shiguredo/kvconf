@@ -281,7 +281,7 @@ validate_http_uri(Value) ->
 %% #kvc_interval{min = {10, ms} , max = {1, sec}, out_unit = millisecond}
 -spec validate_interval({non_neg_integer(), kvconf:in_time_unit()} | binary(),
                         {non_neg_integer(), kvconf:in_time_unit()},
-                        {non_neg_integer(), kvconf:in_time_unit()},
+                        {non_neg_integer(), kvconf:in_time_unit()} | infinity,
                         kvconf:out_time_unit()) ->
     {ok, non_neg_integer()} | invalid_value.
 validate_interval({Value, InUnit}, Min, Max, OutUnit)
@@ -340,6 +340,9 @@ validate_interval_min({Value0, InUnit0}, {Min0, MinUnit0}) ->
             error
     end.
 
+
+validate_interval_max({_Value0, _InUnit0}, infinity) ->
+    ok;
 validate_interval_max({Value0, InUnit0}, {Max0, MaxUnit0}) ->
     {Value, InUnit} = time_unit({Value0, InUnit0}),
     {Max, MaxUnit} = time_unit({Max0, MaxUnit0}),
@@ -401,6 +404,9 @@ validate_interval_test() ->
     ?assertEqual(invalid_value,
                  validate_interval({120, min}, {100, min}, {119, min}, millisecond)),
 
+    %% infinity
+    ?assertEqual({ok, 1_800_000},
+                 validate_interval({500, h}, {0, ms}, infinity, second)),
     ok.
 
 
