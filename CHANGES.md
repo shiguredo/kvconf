@@ -12,12 +12,16 @@
 
 ## develop
 
+## 2020.11
+
+- [ADD] `#kvc_interval{}` の `max` に `infinity` を指定可能にする
+    - @voluntas
+
 ## 2020.10
 
 - [CHANGE] `#kvc_interval{}` の単位を指定する場合は間にスペースをいれる ``10 s``
     - ``数値と単位を分割するために空白（space）を用いる``
-
-      - https://ja.wikipedia.org/wiki/%E5%9B%BD%E9%9A%9B%E5%8D%98%E4%BD%8D%E7%B3%BB
+        - https://ja.wikipedia.org/wiki/%E5%9B%BD%E9%9A%9B%E5%8D%98%E4%BD%8D%E7%B3%BB
     - @voluntas
 
 ## 2020.9.1
