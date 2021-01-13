@@ -14,6 +14,8 @@
 
 ## 2021.1
 
+- [CHANGE] 最小 OTP を 23.2 にする
+    - @voluntas
 - [ADD] 戻り値に見知らぬキーのリスト (binary) を戻すようにする
     - @voluntas
 
