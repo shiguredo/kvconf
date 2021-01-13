@@ -12,6 +12,11 @@
 
 ## develop
 
+## 2021.1
+
+- [ADD] 戻り値に見知らぬキーのリスト (binary) を戻すようにする
+    - @voluntas
+
 ## 2020.11
 
 - [ADD] `#kvc_interval{}` の `max` に `infinity` を指定可能にする
