@@ -12,6 +12,13 @@
 
 ## develop
 
+## 2021.1
+
+- [CHANGE] 最小 OTP を 23.2 にする
+    - @voluntas
+- [ADD] 戻り値に見知らぬキーのリスト (binary) を戻すようにする
+    - @voluntas
+
 ## 2020.11
 
 - [ADD] `#kvc_interval{}` の `max` に `infinity` を指定可能にする

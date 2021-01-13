@@ -8,7 +8,7 @@
 
 smoke_test() ->
     {ok, Binary} = file:read_file(<<"test/smoke_test.conf">>),
-    ok = initialize(
+    {ok, []} = initialize(
            [#kvc{key = two_digits,   type = #kvc_integer{min = 10, max = 99}, required = true},
 
             #kvc{key = float_foo,    type = #kvc_float{min = -10, max = 10}, required = true},

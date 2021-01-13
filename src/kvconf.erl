@@ -20,13 +20,34 @@
 -type out_time_unit() :: second | millisecond | microsecond.
 
 
--spec initialize([#kvc{}], binary()) -> ok | {error, {atom(), key(), any(), non_neg_integer()}}.
+-spec initialize([#kvc{}], binary()) -> {ok, [binary()]} | {error, {atom(), key(), any(), non_neg_integer()}}.
 initialize(KvcList, Binary) ->
     case parse(Binary) of
         {ok, Configurations, LastLineNumber} ->
-            kvconf_validate:validate(LastLineNumber, Configurations, KvcList);
+            case kvconf_validate:validate(LastLineNumber, Configurations, KvcList) of
+                ok ->
+                    UnknownKeys = unknown_keys(Configurations, KvcList),
+                    {ok, UnknownKeys};
+                {error, Reason} ->
+                    {error, Reason}
+            end;
         {error, Reason} ->
             {error, Reason}
+    end.
+
+
+%% XXX(v): 効率死ぬほど良くない
+unknown_keys(Configurations, KvcList) ->
+    unknown_keys(maps:keys(Configurations), KvcList, []).
+
+unknown_keys([], _KvcList, Acc) ->
+    lists:reverse(Acc);
+unknown_keys([Key | Keys], KvcList, Acc) ->
+    case lists:keyfind(binary_to_atom(Key), #kvc.key, KvcList) of
+        false ->
+            unknown_keys(Keys, KvcList, [Key | Acc]);
+        _ ->
+            unknown_keys(Keys, KvcList, Acc)
     end.
 
 
@@ -75,3 +96,22 @@ parse_lines(Configurations, [Line | Lines], LineNumber) ->
                     end
             end
     end.
+
+
+-ifdef(TEST).
+
+-include_lib("eunit/include/eunit.hrl").
+
+unknown_keys_test() ->
+    ?assertEqual([<<"abc">>],
+                 unknown_keys(#{<<"abc">> => a},
+                              [])),
+
+    ?assertEqual([<<"abc">>],
+                 unknown_keys(#{<<"two_digits">> => a, <<"abc">> => b},
+                              [#kvc{key = two_digits,
+                                    type = #kvc_integer{min = 10, max = 99},
+                                    required = true}])),
+    ok.
+
+-endif.
