@@ -28,6 +28,9 @@ key = value
 ## ライセンス
 
 ```
+
+Shunichi Shinohara
+Copyright 2019-2020, Shunichi Shinohara (Original Author)
 Copyright 2019-2020, Shiguredo Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
