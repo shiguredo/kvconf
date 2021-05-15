@@ -12,6 +12,15 @@
 
 ## develop
 
+## 2021.2
+
+- [CHANGE] 最小 OTP を 24.0 にする
+    - @voluntas
+- [UPDATE] GitHub Actions の OTP を 24.0 に上げる
+    - @voluntas
+- [UPDATE] rebar3 を 3.15.1 に上げる
+    - @voluntas
+
 ## 2021.1
 
 - [CHANGE] 最小 OTP を 23.2 にする

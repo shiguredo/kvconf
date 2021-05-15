@@ -9,12 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     if: "! contains(github.event.head_commit.message, 'skip ci')"
     container:
-      image: shiguredo/erlang:otp-23.1.2-ubuntu-20.04
+      image: shiguredo/erlang:otp-24.0-ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - run: make compile dialyzer test
       - name: Slack Notification
         if: failure()
-        uses: rtCamp/action-slack-notify@v2.1.0
+        uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
