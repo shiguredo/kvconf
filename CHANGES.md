@@ -12,6 +12,9 @@
 
 ## develop
 
+- [UPDATE] rebar3 を 3.16.1 に上げる
+    - @voluntas
+
 ## 2021.2
 
 - [CHANGE] 最小 OTP を 24.0 にする
