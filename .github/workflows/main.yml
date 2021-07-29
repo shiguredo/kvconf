@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     if: "! contains(github.event.head_commit.message, 'skip ci')"
     container:
-      image: shiguredo/erlang:otp-24.0-ubuntu-20.04
+      image: shiguredo/erlang:otp-24.0.4-ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - run: make compile dialyzer test

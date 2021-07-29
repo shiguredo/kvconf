@@ -1,21 +1,30 @@
 # 変更履歴
 
-- UPDATE
-    - 下位互換がある変更
-- ADD
-    - 下位互換がある追加
 - CHANGE
     - 下位互換のない変更
+- ADD
+    - 下位互換がある追加
+- UPDATE
+    - 下位互換がある変更
 - FIX
     - バグ修正
 
 
 ## develop
 
-## 2021.2
-
 - [CHANGE] 最小 OTP を 24.0 にする
     - @voluntas
+- [ADD] #kvc_list_atom{} を追加
+    - atom の list を k = v1, v2, v3 のように指定できるようにする
+    - @voluntas
+- [UPDATE] GitHub Actions の OTP を 24.0.4 に上げる
+    - @voluntas
+- [UPDATE] rebar3 を 3.16.1 に上げる
+    - @voluntas
+
+
+## 2021.2
+
 - [UPDATE] GitHub Actions の OTP を 24.0 に上げる
     - @voluntas
 - [UPDATE] rebar3 を 3.15.1 に上げる
