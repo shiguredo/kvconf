@@ -9,7 +9,7 @@
 -include("kvconf.hrl").
 
 -type key() :: atom().
--type type() :: #kvc_atom{} | #kvc_string{} | #kvc_integer{} | #kvc_float{} |
+-type type() :: #kvc_atom{} | #kvc_list_atom{} | #kvc_string{} | #kvc_integer{} | #kvc_float{} |
                 #kvc_boolean{} | #kvc_ipv4_address{} | #kvc_ipv6_address{} |
                 #kvc_list_ipv4_address{} | #kvc_list_ipv6_address{} |
                 #kvc_port_number{} | #kvc_http_uri{} | #kvc_interval{}.
