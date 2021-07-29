@@ -55,6 +55,8 @@ validate_one(#kvc{required = false, type = Type}, Value) ->
 
 validate_type(#kvc_atom{candidates = Candidates}, Value) ->
     validate_atom(Value, Candidates);
+validate_type(#kvc_list_atom{}, Value) ->
+    validate_list_atom(Value);
 validate_type(#kvc_string{}, Value) ->
     validate_string(Value);
 validate_type(#kvc_integer{min = Min, max = Max}, Value) ->
@@ -108,6 +110,19 @@ validate_atom(Value, [Candidate | Candidates]) when is_atom(Candidate) ->
     end;
 validate_atom(Value, [_ | Candidates]) ->
     validate_atom(Value, Candidates).
+
+
+validate_list_atom(Value) when is_binary(Value) ->
+    RawListAtom = binary:split(Value, [<<",">>, <<$\s>>], [trim_all, global]),
+    validate_list_atom(RawListAtom);
+%% デフォルトチェック
+validate_list_atom(Value) when is_list(Value) ->
+    F = fun(V) when is_atom(V) ->
+                V;
+           (V) when is_binary(V) ->
+                binary_to_atom(V, utf8)
+        end,
+    {ok, lists:map(F, Value)}.
 
 
 validate_port_number(Value) ->
@@ -413,6 +428,13 @@ validate_interval_test() ->
 validate_atom_test() ->
     ?assertEqual(invalid_value, validate_atom(<<"b">>, [a])),
     ?assertEqual({ok, a}, validate_atom(a, [a])),
+    ok.
+
+validate_list_atom_test() ->
+    ?assertEqual({ok, [a, a]}, validate_list_atom([<<"a">>, a])),
+    ?assertEqual({ok, [a, b, c]}, validate_list_atom(<<"a, b, c">>)),
+    ?assertEqual({ok, [a, b, c]}, validate_list_atom(<<"a,b,c">>)),
+    ?assertEqual({ok, [a, b, c]}, validate_list_atom(<<"a, b,       c">>)),
     ok.
 
 
