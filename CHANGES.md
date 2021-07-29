@@ -12,6 +12,10 @@
 
 ## develop
 
+## 2021.3.1
+
+- [FIX] dialyzer 指摘修正漏れ
+
 ## 2021.3
 
 - [CHANGE] 最小 OTP を 24.0 にする
