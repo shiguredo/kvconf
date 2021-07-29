@@ -16,7 +16,8 @@
     - @voluntas
 - [ADD] #kvc_list_atom{} を追加
     - atom の list を k = v1, v2, v3 のように指定できるようにする
-- [UPDATE] GitHub Actions の OTP を 24.0.1 に上げる
+    - @voluntas
+- [UPDATE] GitHub Actions の OTP を 24.0.4 に上げる
     - @voluntas
 - [UPDATE] rebar3 を 3.16.1 に上げる
     - @voluntas
