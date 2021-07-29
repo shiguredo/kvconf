@@ -12,6 +12,13 @@
 
 ## develop
 
+## 2021.3.1
+
+- [FIX] dialyzer 指摘修正漏れ
+    - @voluntas
+
+## 2021.3
+
 - [CHANGE] 最小 OTP を 24.0 にする
     - @voluntas
 - [ADD] #kvc_list_atom{} を追加
@@ -21,7 +28,6 @@
     - @voluntas
 - [UPDATE] rebar3 を 3.16.1 に上げる
     - @voluntas
-
 
 ## 2021.2
 
