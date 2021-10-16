@@ -49,6 +49,25 @@
          }).
 
 
+%% 中間証明書を含んだ証明書
+-record(kvc_pkix_fullchain_pem_file, {
+         }).
+
+%% 証明書の秘密鍵
+-record(kvc_pkix_privkey_pem_file, {
+         }).
+
+
+-record(kvc_pkix_cert_pem_file, {
+         }).
+
+
+%% TODO: dir を指定できる、未実装
+%% openssl の -CAPath に相当
+-record(kvc_pkix_cacert_path, {
+         }).
+
+
 -record(kvc, {
           key :: kvconf:key(),
           type :: kvconf:type(),

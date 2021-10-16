@@ -78,7 +78,13 @@ validate_type(#kvc_boolean{}, Value) ->
 validate_type(#kvc_http_uri{}, Value) ->
     validate_http_uri(Value);
 validate_type(#kvc_interval{min = Min, max = Max, out_time_unit = Unit}, Value) ->
-    validate_interval(Value, Min, Max, Unit).
+    validate_interval(Value, Min, Max, Unit);
+validate_type(#kvc_pkix_fullchain_pem_file{}, Value) ->
+    kvconf_pkix:validate_pkix_fullchain_pem_file(Value);
+validate_type(#kvc_pkix_privkey_pem_file{}, Value) ->
+    kvconf_pkix:validate_pkix_privkey_pem_file(Value);
+validate_type(#kvc_pkix_cert_pem_file{}, Value) ->
+    kvconf_pkix:validate_pkix_cert_pem_file(Value).
 
 
 validate_atom(_Value, []) ->
