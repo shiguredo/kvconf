@@ -12,6 +12,10 @@
 
 ## develop
 
+## 2021.4.1
+
+- [FIX] pkix 関連 validator の戻り値を修正する
+
 ## 2021.4
 
 - [ADD] #kvc_pkix_fullchain_pem_file{} を追加
