@@ -8,8 +8,8 @@
 %% TODO: 複数 CA ファイル設定できる vlaidate_pkix_cacert_path で dir を指定できる仕組みを作る
 
 
-validate_pkix_fullchain_pem_file(FullchainPemFile) ->
-    case file:read_file(FullchainPemFile) of
+validate_pkix_fullchain_pem_file(FullchainPemFilePath) ->
+    case file:read_file(FullchainPemFilePath) of
         {ok, Bin} ->
             %% PEM or DER
             case public_key:pem_decode(Bin) of
@@ -33,7 +33,7 @@ validate_pkix_fullchain_pem_file(FullchainPemFile) ->
                         true ->
                             %% TODO: 複数証明書が入ってた場合はチェーンを確認する
                             %% TODO: チェーンを確認するかどうかを指定できるようにする
-                            ok;
+                            {ok, FullchainPemFilePath};
                         false ->
                             error
                     end
@@ -43,8 +43,8 @@ validate_pkix_fullchain_pem_file(FullchainPemFile) ->
     end.
 
 
-validate_pkix_privkey_pem_file(KeyfilePath) ->
-    case file:read_file(KeyfilePath) of
+validate_pkix_privkey_pem_file(PrivkeyPemFilePath) ->
+    case file:read_file(PrivkeyPemFilePath) of
         {ok, Bin} ->
             %% Format
             case public_key:pem_decode(Bin) of
@@ -53,7 +53,7 @@ validate_pkix_privkey_pem_file(KeyfilePath) ->
                 %% not_encrypted であることを確認する
                 [{_PkiAsn1Type, _Der, not_encrypted}] ->
                     %% TODO: 対応している PKI Asn1Type を指定できるようにする
-                    ok;
+                    {ok, PrivkeyPemFilePath};
                 _ ->
                     error
             end;
@@ -62,8 +62,8 @@ validate_pkix_privkey_pem_file(KeyfilePath) ->
     end.
 
 
-validate_pkix_cert_pem_file(CertPemFile) ->
-    case file:read_file(CertPemFile) of
+validate_pkix_cert_pem_file(CertPemFilePath) ->
+    case file:read_file(CertPemFilePath) of
         {ok, Bin} ->
             %% Format
             case public_key:pem_decode(Bin) of
@@ -85,7 +85,7 @@ validate_pkix_cert_pem_file(CertPemFile) ->
                         end,
                     case lists:all(F, PemEntryList) of
                         true ->
-                            ok;
+                            {ok, CertPemFilePath};
                         false ->
                             error
                     end
