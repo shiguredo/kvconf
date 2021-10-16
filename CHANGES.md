@@ -12,6 +12,13 @@
 
 ## develop
 
+- [ADD] #kvc_pkix_fullchain_pem_file{} を追加
+    - @voluntas
+- [ADD] #kvc_pkix_privkey_pem_file{} を追加
+    - @voluntas
+- [ADD] #kvc_pkix_cert_pem_file{} を追加
+    - @voluntas
+
 ## 2021.3.1
 
 - [FIX] dialyzer 指摘修正漏れ
