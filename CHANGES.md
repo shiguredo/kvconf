@@ -12,6 +12,11 @@
 
 ## develop
 
+- [UPDATE] GitHub Actions の OTP を 24.1.4 に上げる
+    - @voluntas
+- [CHANGE] 最小 OTP を 24.1 にする
+    - @voluntas
+
 ## 2021.4.1
 
 - [FIX] pkix 関連 validator の戻り値を修正する
