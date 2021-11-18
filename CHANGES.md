@@ -18,6 +18,7 @@
     - @voluntas
 - [CHANGE] 最小 OTP を 24.1 にする
     - @voluntas
+- [ADD] rebar3 hex plugin を追加
 
 ## 2021.4.1
 
