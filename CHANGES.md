@@ -12,6 +12,8 @@
 
 ## develop
 
+## 2021.5.0
+
 - [UPDATE] rebar3 を 3.17.0 に上げる
     - @voluntas
 - [UPDATE] GitHub Actions の OTP を 24.1.5 に上げる
