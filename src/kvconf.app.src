@@ -1,6 +1,6 @@
 {application, kvconf,
  [{description, "kvconf"},
-  {vsn, "2021.4.1"},
+  {vsn, "2021.5.0"},
   {registered, []},
   {applications, [
                   kernel,
@@ -8,7 +8,6 @@
                  ]},
   {env,[]},
   {modules, []},
-
-  {licenses, ["Apache 2.0"]},
-  {links, []}
+  {licenses, ["Apache License, Version 2.0"]},
+  {links, [{"GitHub", "https://github.com/shiguredo/kvconf"}]},
  ]}.

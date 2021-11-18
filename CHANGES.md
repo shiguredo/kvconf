@@ -12,6 +12,16 @@
 
 ## develop
 
+## 2021.5.0
+
+- [UPDATE] rebar3 を 3.17.0 に上げる
+    - @voluntas
+- [UPDATE] GitHub Actions の OTP を 24.1.5 に上げる
+    - @voluntas
+- [CHANGE] 最小 OTP を 24.1 にする
+    - @voluntas
+- [ADD] rebar3 hex plugin を追加
+
 ## 2021.4.1
 
 - [FIX] pkix 関連 validator の戻り値を修正する
