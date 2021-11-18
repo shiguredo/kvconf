@@ -14,7 +14,7 @@
 
 - [UPDATE] rebar3 を 3.17.0 に上げる
     - @voluntas
-- [UPDATE] GitHub Actions の OTP を 24.1.4 に上げる
+- [UPDATE] GitHub Actions の OTP を 24.1.5 に上げる
     - @voluntas
 - [CHANGE] 最小 OTP を 24.1 にする
     - @voluntas
