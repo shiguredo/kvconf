@@ -18,6 +18,8 @@ test:
 dialyzer:
 	@./rebar3 dialyzer
 
-
 distclean:
 	@./rebar3 clean --all
+
+publish:
+	@./rebar3 hex publish
