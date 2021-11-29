@@ -12,6 +12,11 @@
 
 ## develop
 
+## 2021.5.2
+
+- [FIX] EC PARAMETERS に対応する
+- [FIX] EC PRIVATE KEY に対応する
+
 ## 2021.5.1
 
 - [FIX] app.src タイポ修正
