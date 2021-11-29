@@ -1,7 +1,13 @@
 # kvconf
 
-kvconf は Erlang アプリケーション時に Erlang Term を設定ファイルに疲れた人のための仕組みです。
-設定ファイルに対するバリデーションを Erlang のレコードを利用して定義することができるため Dialyzer の恩恵を受けることができます。
+- kvconf は Erlang アプリケーション時に Erlang Term を設定ファイルに疲れた人のための仕組みです
+- 設定ファイルに対するバリデーションを Erlang のレコードを利用して定義することができるため Dialyzer の恩恵を受けることができます。
+
+## rebar.conf
+
+```erlang
+{deps, [{kvconf, "2021.5.1"}]}.
+```
 
 ## 設定ファイル例
 
@@ -10,6 +16,7 @@ etc/app.conf
 ```
 
 ```ini
+# コメント
 key = value
 ```
 
