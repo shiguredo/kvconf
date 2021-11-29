@@ -12,6 +12,10 @@
 
 ## develop
 
+## 2021.5.3
+
+- [FIX] EC PARAMETERS と EC PRIVATE KEY どちらの順番でもよくする
+
 ## 2021.5.2
 
 - [FIX] EC PARAMETERS に対応する
