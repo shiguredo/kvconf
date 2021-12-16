@@ -12,6 +12,9 @@
 
 ## develop
 
+- [ADD] slack 通知を secrets.SLACK_INTERNAL_CHANNEL に変更
+- [UPDATE] GitHub Actions の docker の OTP を 24.2 に上げる
+
 ## 2021.5.3
 
 - [FIX] EC PARAMETERS と EC PRIVATE KEY どちらの順番でもよくする
