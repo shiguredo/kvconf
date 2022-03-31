@@ -47,13 +47,13 @@ undoc_kv_list(Configurations, KvcList) ->
 
 undoc_kv_list([], _KvcList, Acc) ->
     lists:reverse(Acc);
-undoc_kv_list([{<<"undoc_", _/binary>> = Key, _Value} = Property | Keys],  KvcList, Acc) ->
+undoc_kv_list([{<<"undoc_", _/binary>> = Key, _Value} = Kv | Keys],  KvcList, Acc) ->
     case lists:keyfind(binary_to_atom(Key), #kvc.key, KvcList) of
         false ->
             %% 知らないキーはスキップ
             undoc_kv_list(Keys, KvcList, Acc);
         _ ->
-            undoc_kv_list(Keys, KvcList, [ Property | Acc])
+            undoc_kv_list(Keys, KvcList, [ Kv | Acc])
     end;
 undoc_kv_list([_ | Keys], KvcList, Acc) ->
     undoc_kv_list(Keys, KvcList, Acc).
