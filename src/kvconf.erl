@@ -21,7 +21,7 @@
 -type out_time_unit() :: second | millisecond | microsecond.
 
 
--spec initialize([#kvc{}], binary()) -> {ok, [binary()], [{binary(), term()}]} |
+-spec initialize([#kvc{}], binary()) -> {ok, [binary()], [{atom(), term()}]} |
                                         {error, {atom(), key(), any(), non_neg_integer()}}.
 initialize(KvcList, Binary) ->
     case parse(Binary) of
@@ -42,18 +42,19 @@ initialize(KvcList, Binary) ->
 
 %% XXX(v): 効率死ぬほど良くない
 undoc_kv_list(Configurations, KvcList) ->
-    undoc_kv_list(maps:to_list(Configurations), KvcList, []).
+    undoc_kv_list(maps:keys(Configurations), KvcList, []).
 
 
 undoc_kv_list([], _KvcList, Acc) ->
     lists:reverse(Acc);
-undoc_kv_list([{<<"undoc_", _/binary>> = Key, _Value} = Kv | Keys],  KvcList, Acc) ->
-    case lists:keyfind(binary_to_atom(Key), #kvc.key, KvcList) of
-        false ->
+undoc_kv_list([<<"undoc_", _/binary>> = RawKey | Keys],  KvcList, Acc) ->
+    Key = binary_to_atom(RawKey),
+    case get_value(Key) of
+        not_found ->
             %% 知らないキーはスキップ
             undoc_kv_list(Keys, KvcList, Acc);
-        _ ->
-            undoc_kv_list(Keys, KvcList, [ Kv | Acc])
+        Value ->
+            undoc_kv_list(Keys, KvcList, [ {Key, Value} | Acc])
     end;
 undoc_kv_list([_ | Keys], KvcList, Acc) ->
     undoc_kv_list(Keys, KvcList, Acc).
@@ -140,7 +141,9 @@ unknown_keys_test() ->
 
 
 undoc_kv_list_test() ->
-    ?assertEqual([{<<"undoc_abc">>, 30}],
+    ok = persistent_term:put(two_digits, 20),
+    ok = persistent_term:put(undoc_abc, 30),
+    ?assertEqual([{undoc_abc, 30}],
                  undoc_kv_list(#{<<"two_digits">> => 20,
                                  <<"undoc_abc">> => 30,
                                  <<"undoc_xyz">> => 10},

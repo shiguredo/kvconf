@@ -12,6 +12,13 @@
 
 ## develop
 
+## 2022.2.0
+
+- [UPDATE] rebar3 を 3.18.0 に上げる
+    - @voluntas
+- [CHANGE] UndocKvList を {atom(), term()} で返すようにする
+    - @voluntas
+
 ## 2022.1.0
 
 - [CHANGE] kvconf:initialize/2 の戻りを {ok, UnknownKeys, UndocKvList} にする
