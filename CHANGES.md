@@ -12,6 +12,8 @@
 
 ## develop
 
+## 2022.1.0
+
 - [CHANGE] kvconf:initialize/2 の戻りを {ok, UnknownKeys, UndocKvList} にする
     - @voluntas
 - [CHANGE] rebar3 の minimum_otp_vsn を 24.2 にする
