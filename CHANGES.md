@@ -12,6 +12,17 @@
 
 ## develop
 
+## 2022.1.0
+
+- [CHANGE] kvconf:initialize/2 の戻りを {ok, UnknownKeys, UndocKvList} にする
+    - @voluntas
+- [CHANGE] rebar3 の minimum_otp_vsn を 24.2 にする
+    - @voluntas
+- [UPDATE] GitHub Actions の docker の OTP を 24.2 に上げる
+    - @voluntas
+- [ADD] slack 通知を secrets.SLACK_INTERNAL_CHANNEL に変更
+    - @voluntas
+
 ## 2021.5.3
 
 - [FIX] EC PARAMETERS と EC PRIVATE KEY どちらの順番でもよくする

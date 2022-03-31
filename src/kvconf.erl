@@ -21,20 +21,43 @@
 -type out_time_unit() :: second | millisecond | microsecond.
 
 
--spec initialize([#kvc{}], binary()) -> {ok, [binary()]} | {error, {atom(), key(), any(), non_neg_integer()}}.
+-spec initialize([#kvc{}], binary()) -> {ok, [binary()], [{binary(), term()}]} |
+                                        {error, {atom(), key(), any(), non_neg_integer()}}.
 initialize(KvcList, Binary) ->
     case parse(Binary) of
         {ok, Configurations, LastLineNumber} ->
             case kvconf_validate:validate(LastLineNumber, Configurations, KvcList) of
                 ok ->
                     UnknownKeys = unknown_keys(Configurations, KvcList),
-                    {ok, UnknownKeys};
+                    %% undoc_ で設定された値一覧を返す
+                    UndocKvList = undoc_kv_list(Configurations, KvcList),
+                    {ok, UnknownKeys, UndocKvList};
                 {error, Reason} ->
                     {error, Reason}
             end;
         {error, Reason} ->
             {error, Reason}
     end.
+
+
+%% XXX(v): 効率死ぬほど良くない
+undoc_kv_list(Configurations, KvcList) ->
+    undoc_kv_list(maps:to_list(Configurations), KvcList, []).
+
+
+undoc_kv_list([], _KvcList, Acc) ->
+    lists:reverse(Acc);
+undoc_kv_list([{<<"undoc_", _/binary>> = Key, _Value} = Kv | Keys],  KvcList, Acc) ->
+    case lists:keyfind(binary_to_atom(Key), #kvc.key, KvcList) of
+        false ->
+            %% 知らないキーはスキップ
+            undoc_kv_list(Keys, KvcList, Acc);
+        _ ->
+            undoc_kv_list(Keys, KvcList, [ Kv | Acc])
+    end;
+undoc_kv_list([_ | Keys], KvcList, Acc) ->
+    undoc_kv_list(Keys, KvcList, Acc).
+
 
 
 %% XXX(v): 効率死ぬほど良くない
@@ -109,10 +132,25 @@ unknown_keys_test() ->
                               [])),
 
     ?assertEqual([<<"abc">>],
-                 unknown_keys(#{<<"two_digits">> => a, <<"abc">> => b},
+                 unknown_keys(#{<<"two_digits">> => 20, <<"abc">> => b},
                               [#kvc{key = two_digits,
                                     type = #kvc_integer{min = 10, max = 99},
                                     required = true}])),
     ok.
+
+
+undoc_kv_list_test() ->
+    ?assertEqual([{<<"undoc_abc">>, 30}],
+                 undoc_kv_list(#{<<"two_digits">> => 20,
+                                 <<"undoc_abc">> => 30,
+                                 <<"undoc_xyz">> => 10},
+                               [#kvc{key = two_digits,
+                                     type = #kvc_integer{min = 10, max = 99},
+                                     required = false},
+                                #kvc{key = undoc_abc,
+                                     type = #kvc_integer{min = 10, max = 99},
+                                     required = false}])),
+    ok.
+
 
 -endif.
