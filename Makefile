@@ -3,6 +3,7 @@
 all: clean upgrade compile dialyzer test
 
 upgrade:
+	@./rebar3 plugins upgrade --all
 	@./rebar3 upgrade --all
 
 compile:

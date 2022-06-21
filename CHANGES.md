@@ -12,6 +12,15 @@
 
 ## develop
 
+- [CHANGE] rebar3 の minimum_otp_vsn を 25.0 にする
+    - @voluntas
+- [ADD] rebar3 lint を追加する
+    - @voluntas
+- [UPDATE] rebar3 を 3.19.0 に上げる
+    - @voluntas
+- [UPDATE] GitHub Actions の docker の OTP を 25.0 に上げる
+    - @voluntas
+
 ## 2022.2.0
 
 - [UPDATE] rebar3 を 3.18.0 に上げる
