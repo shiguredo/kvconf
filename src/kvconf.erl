@@ -1,28 +1,42 @@
 -module(kvconf).
 
 -export([initialize/2]).
--export([set_value/2, unset_value/1, get_value/1]).
+-export([set_value/2,
+         unset_value/1,
+         get_value/1]).
 
--export_type([key/0, type/0]).
--export_type([in_time_unit/0, out_time_unit/0]).
+-export_type([key/0,
+              type/0]).
+-export_type([in_time_unit/0,
+              out_time_unit/0]).
 
 -include("kvconf.hrl").
 
 -type key() :: atom().
--type type() :: #kvc_atom{} | #kvc_list_atom{} | #kvc_string{} | #kvc_integer{} | #kvc_float{} |
-                #kvc_boolean{} | #kvc_ipv4_address{} | #kvc_ipv6_address{} |
-                #kvc_list_ipv4_address{} | #kvc_list_ipv6_address{} |
-                #kvc_port_number{} | #kvc_http_uri{} | #kvc_interval{} |
-                #kvc_pkix_fullchain_pem_file{} | #kvc_pkix_privkey_pem_file{} | #kvc_pkix_cert_pem_file{}.
-
+-type type() :: #kvc_atom{} |
+                #kvc_list_atom{} |
+                #kvc_string{} |
+                #kvc_integer{} |
+                #kvc_float{} |
+                #kvc_boolean{} |
+                #kvc_ipv4_address{} |
+                #kvc_ipv6_address{} |
+                #kvc_list_ipv4_address{} |
+                #kvc_list_ipv6_address{} |
+                #kvc_port_number{} |
+                #kvc_http_uri{} |
+                #kvc_interval{} |
+                #kvc_pkix_fullchain_pem_file{} |
+                #kvc_pkix_privkey_pem_file{} |
+                #kvc_pkix_cert_pem_file{}.
 
 %% 入力を許可する値の単位
 -type in_time_unit() :: ms | s | min | h.
 -type out_time_unit() :: second | millisecond | microsecond.
 
 
--spec initialize([#kvc{}], binary()) -> {ok, [binary()], [{atom(), term()}]} |
-                                        {error, {atom(), key(), any(), non_neg_integer()}}.
+-spec initialize([#kvc{}], binary()) ->
+          {ok, [binary()], [{atom(), term()}]} | {error, {atom(), key(), any(), non_neg_integer()}}.
 initialize(KvcList, Binary) ->
     case parse(Binary) of
         {ok, Configurations, LastLineNumber} ->
@@ -47,23 +61,23 @@ undoc_kv_list(Configurations, KvcList) ->
 
 undoc_kv_list([], _KvcList, Acc) ->
     lists:reverse(Acc);
-undoc_kv_list([<<"undoc_", _/binary>> = RawKey | Keys],  KvcList, Acc) ->
+undoc_kv_list([<<"undoc_", _/binary>> = RawKey | Keys], KvcList, Acc) ->
     Key = binary_to_atom(RawKey),
     case get_value(Key) of
         not_found ->
             %% 知らないキーはスキップ
             undoc_kv_list(Keys, KvcList, Acc);
         Value ->
-            undoc_kv_list(Keys, KvcList, [ {Key, Value} | Acc])
+            undoc_kv_list(Keys, KvcList, [{Key, Value} | Acc])
     end;
 undoc_kv_list([_ | Keys], KvcList, Acc) ->
     undoc_kv_list(Keys, KvcList, Acc).
 
 
-
 %% XXX(v): 効率死ぬほど良くない
 unknown_keys(Configurations, KvcList) ->
     unknown_keys(maps:keys(Configurations), KvcList, []).
+
 
 unknown_keys([], _KvcList, Acc) ->
     lists:reverse(Acc);
@@ -115,9 +129,7 @@ parse_lines(Configurations, [Line | Lines], LineNumber) ->
                         true ->
                             {error, {duplicated_key, Key, LineNumber}};
                         false ->
-                            parse_lines(Configurations#{Key => {Value, Line, LineNumber}},
-                                        Lines,
-                                        LineNumber + 1)
+                            parse_lines(Configurations#{Key => {Value, Line, LineNumber}}, Lines, LineNumber + 1)
                     end
             end
     end.
@@ -127,16 +139,17 @@ parse_lines(Configurations, [Line | Lines], LineNumber) ->
 
 -include_lib("eunit/include/eunit.hrl").
 
+
 unknown_keys_test() ->
-    ?assertEqual([<<"abc">>],
-                 unknown_keys(#{<<"abc">> => a},
-                              [])),
+    ?assertEqual([<<"abc">>], unknown_keys(#{<<"abc">> => a}, [])),
 
     ?assertEqual([<<"abc">>],
                  unknown_keys(#{<<"two_digits">> => 20, <<"abc">> => b},
-                              [#kvc{key = two_digits,
-                                    type = #kvc_integer{min = 10, max = 99},
-                                    required = true}])),
+                              [#kvc{
+                                 key = two_digits,
+                                 type = #kvc_integer{min = 10, max = 99},
+                                 required = true
+                                }])),
     ok.
 
 
@@ -144,15 +157,21 @@ undoc_kv_list_test() ->
     ok = persistent_term:put(two_digits, 20),
     ok = persistent_term:put(undoc_abc, 30),
     ?assertEqual([{undoc_abc, 30}],
-                 undoc_kv_list(#{<<"two_digits">> => 20,
+                 undoc_kv_list(#{
+                                 <<"two_digits">> => 20,
                                  <<"undoc_abc">> => 30,
-                                 <<"undoc_xyz">> => 10},
-                               [#kvc{key = two_digits,
-                                     type = #kvc_integer{min = 10, max = 99},
-                                     required = false},
-                                #kvc{key = undoc_abc,
-                                     type = #kvc_integer{min = 10, max = 99},
-                                     required = false}])),
+                                 <<"undoc_xyz">> => 10
+                                },
+                               [#kvc{
+                                  key = two_digits,
+                                  type = #kvc_integer{min = 10, max = 99},
+                                  required = false
+                                 },
+                                #kvc{
+                                  key = undoc_abc,
+                                  type = #kvc_integer{min = 10, max = 99},
+                                  required = false
+                                 }])),
     ok.
 
 
