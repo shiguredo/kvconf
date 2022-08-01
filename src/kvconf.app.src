@@ -1,13 +1,10 @@
 {application, kvconf,
- [{description, "kvconf"},
-  {vsn, "2022.2.0"},
-  {registered, []},
-  {applications, [
-                  kernel,
-                  stdlib
-                 ]},
-  {env,[]},
-  {modules, []},
-  {licenses, ["Apache-2.0"]},
-  {links, [{"GitHub", "https://github.com/shiguredo/kvconf"}]}
- ]}.
+              [{description, "kvconf"},
+               {vsn, "2022.2.0"},
+               {registered, []},
+               {applications, [kernel,
+                               stdlib]},
+               {env, []},
+               {modules, []},
+               {licenses, ["Apache-2.0"]},
+               {links, [{"GitHub", "https://github.com/shiguredo/kvconf"}]}]}.

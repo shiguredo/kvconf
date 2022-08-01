@@ -4,7 +4,6 @@
          validate_pkix_privkey_pem_file/1,
          validate_pkix_cert_pem_file/1]).
 
-
 %% TODO: 複数 CA ファイル設定できる vlaidate_pkix_cacert_path で dir を指定できる仕組みを作る
 
 
