@@ -41,13 +41,11 @@
 -record(kvc_http_uri, {
          }).
 
-
 -record(kvc_interval, {
           min :: {non_neg_integer(), kvconf:in_time_unit()},
           max :: {non_neg_integer(), kvconf:in_time_unit()} | infinity,
           out_time_unit :: kvconf:out_time_unit()
          }).
-
 
 %% 中間証明書を含んだ証明書
 -record(kvc_pkix_fullchain_pem_file, {
@@ -57,16 +55,13 @@
 -record(kvc_pkix_privkey_pem_file, {
          }).
 
-
 -record(kvc_pkix_cert_pem_file, {
          }).
-
 
 %% TODO: dir を指定できる、未実装
 %% openssl の -CAPath に相当
 -record(kvc_pkix_cacert_path, {
          }).
-
 
 -record(kvc, {
           key :: kvconf:key(),

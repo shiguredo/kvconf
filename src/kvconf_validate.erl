@@ -6,7 +6,7 @@
 
 
 -spec validate(non_neg_integer(), map(), [#kvc{}]) ->
-    ok | {error, {atom(), any(), non_neg_integer()}}.
+          ok | {error, {atom(), any(), non_neg_integer()}}.
 validate(_LastLineNumber, _Configurations, []) ->
     ok;
 validate(LastLineNumber, Configurations, [#kvc{key = Key} = Kvc | KvcList]) ->
@@ -238,12 +238,13 @@ validate_list_ipv4_address(Value) when is_list(Value) ->
             invalid_value
     end.
 
+
 validate_list_ipv4_address0([], Acc) ->
     {ok, lists:reverse(Acc)};
-validate_list_ipv4_address0([Value|Rest], Acc) ->
+validate_list_ipv4_address0([Value | Rest], Acc) ->
     case validate_ipv4_address(Value) of
         {ok, IpAddress} ->
-            validate_list_ipv4_address0(Rest, [IpAddress|Acc]);
+            validate_list_ipv4_address0(Rest, [IpAddress | Acc]);
         invalid_value ->
             invalid_value
     end.
@@ -269,12 +270,13 @@ validate_list_ipv6_address(Value) when is_list(Value) ->
             invalid_value
     end.
 
+
 validate_list_ipv6_address0([], Acc) ->
     {ok, lists:reverse(Acc)};
-validate_list_ipv6_address0([Value|Rest], Acc) ->
+validate_list_ipv6_address0([Value | Rest], Acc) ->
     case validate_ipv6_address(Value) of
         {ok, IpAddress} ->
-            validate_list_ipv6_address0(Rest, [IpAddress|Acc]);
+            validate_list_ipv6_address0(Rest, [IpAddress | Acc]);
         invalid_value ->
             invalid_value
     end.
@@ -298,13 +300,14 @@ validate_http_uri(Value) ->
 
 -define(IN_TIME_UNIT, [ms, s, min, h]).
 
+
 %% TODO(v): infinity 対応
 %% #kvc_interval{min = {10, ms} , max = {1, sec}, out_unit = millisecond}
 -spec validate_interval({non_neg_integer(), kvconf:in_time_unit()} | binary(),
                         {non_neg_integer(), kvconf:in_time_unit()},
                         {non_neg_integer(), kvconf:in_time_unit()} | infinity,
                         kvconf:out_time_unit()) ->
-    {ok, non_neg_integer()} | invalid_value.
+          {ok, non_neg_integer()} | invalid_value.
 validate_interval({Value, InUnit}, Min, Max, OutUnit)
   when is_integer(Value) andalso is_atom(InUnit) ->
     case validate_interval_min({Value, InUnit}, Min) of
@@ -436,6 +439,7 @@ validate_atom_test() ->
     ?assertEqual({ok, a}, validate_atom(a, [a])),
     ok.
 
+
 validate_list_atom_test() ->
     ?assertEqual({ok, [a, a]}, validate_list_atom([<<"a">>, a])),
     ?assertEqual({ok, [a, b, c]}, validate_list_atom(<<"a, b, c">>)),
@@ -450,30 +454,28 @@ validate_integer_test() ->
 
 
 validate_ipv4_address_test() ->
-    ?assertEqual({ok, {1,2,3,4}}, validate_ipv4_address({1,2,3,4})),
+    ?assertEqual({ok, {1, 2, 3, 4}}, validate_ipv4_address({1, 2, 3, 4})),
     ok.
 
 
 validate_ipv6_address_test() ->
-    ?assertEqual(invalid_value, validate_ipv6_address({1,2,3,4})),
-    ?assertEqual({ok, {1,2,3,4,1,2,3,4}}, validate_ipv6_address({1,2,3,4,1,2,3,4})),
+    ?assertEqual(invalid_value, validate_ipv6_address({1, 2, 3, 4})),
+    ?assertEqual({ok, {1, 2, 3, 4, 1, 2, 3, 4}}, validate_ipv6_address({1, 2, 3, 4, 1, 2, 3, 4})),
     ok.
 
 
-
 validate_list_ipv4_address_test() ->
-    ?assertEqual(invalid_value, validate_list_ipv4_address([{1,2,3}])),
-    ?assertEqual(invalid_value, validate_list_ipv4_address([{1,2,3,4}, {1,2,3}])),
-    ?assertEqual({ok, [{1,2,3,4}]}, validate_list_ipv4_address([{1,2,3,4}])),
+    ?assertEqual(invalid_value, validate_list_ipv4_address([{1, 2, 3}])),
+    ?assertEqual(invalid_value, validate_list_ipv4_address([{1, 2, 3, 4}, {1, 2, 3}])),
+    ?assertEqual({ok, [{1, 2, 3, 4}]}, validate_list_ipv4_address([{1, 2, 3, 4}])),
     ok.
 
 
 validate_list_ipv6_address_test() ->
-    ?assertEqual(invalid_value, validate_list_ipv6_address([{1,2,3,4,1,2,3}])),
-    ?assertEqual(invalid_value, validate_list_ipv6_address([{1,2,3,4,1,2,3}, {1,2,3}])),
-    ?assertEqual({ok, [{1,2,3,4,1,2,3,4}]}, validate_list_ipv6_address([{1,2,3,4,1,2,3,4}])),
+    ?assertEqual(invalid_value, validate_list_ipv6_address([{1, 2, 3, 4, 1, 2, 3}])),
+    ?assertEqual(invalid_value, validate_list_ipv6_address([{1, 2, 3, 4, 1, 2, 3}, {1, 2, 3}])),
+    ?assertEqual({ok, [{1, 2, 3, 4, 1, 2, 3, 4}]}, validate_list_ipv6_address([{1, 2, 3, 4, 1, 2, 3, 4}])),
     ok.
-
 
 
 validate_one_test() ->
