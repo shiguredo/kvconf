@@ -125,6 +125,7 @@ parse_lines(Configurations, [Line | Lines], LineNumber) ->
         {match, _} ->
             parse_lines(Configurations, Lines, LineNumber + 1);
         nomatch ->
+            %% TODO: ここは定数でもいいかもしれない
             case re:run(Line, <<"^([^=]*)=(.*)$">>, [{capture, all, binary}]) of
                 nomatch ->
                     {error, {invalid_line_format, Line, LineNumber}};
@@ -135,7 +136,9 @@ parse_lines(Configurations, [Line | Lines], LineNumber) ->
                         true ->
                             {error, {duplicated_key, Key, LineNumber}};
                         false ->
-                            parse_lines(Configurations#{Key => {Value, Line, LineNumber}}, Lines, LineNumber + 1)
+                            parse_lines(Configurations#{Key => {Value, Line, LineNumber}},
+                                        Lines,
+                                        LineNumber + 1)
                     end
             end
     end.
