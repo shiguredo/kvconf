@@ -5,8 +5,9 @@
 -include("kvconf.hrl").
 
 
--spec validate(non_neg_integer(), map(), [#kvc{}]) ->
-    ok | {error, {atom(), any(), non_neg_integer()}}.
+-spec validate(non_neg_integer(), COnfigurations :: map(), [#kvc{}]) ->
+          ok |
+          {error, {Reason :: atom(), Line :: any(), LineNumber :: non_neg_integer()}}.
 validate(_LastLineNumber, _Configurations, []) ->
     ok;
 validate(LastLineNumber, Configurations, [#kvc{key = Key} = Kvc | KvcList]) ->
@@ -42,7 +43,11 @@ validate_one(#kvc{required = false, default = undefined}) ->
     %% デフォルト値がない場合は何もしない
     %% 取り出したときに not_found が返ってくるのでそれを処理すること
     skip;
-validate_one(#kvc{required = false, type = Type, default = Value}) ->
+validate_one(#kvc{
+               required = false,
+               type = Type,
+               default = Value
+              }) ->
     %% デフォルトも型チェックする
     validate_type(Type, Value).
 
@@ -77,7 +82,12 @@ validate_type(#kvc_boolean{}, Value) ->
     validate_boolean(Value);
 validate_type(#kvc_http_uri{}, Value) ->
     validate_http_uri(Value);
-validate_type(#kvc_interval{min = Min, max = Max, out_time_unit = Unit}, Value) ->
+validate_type(#kvc_interval{
+                min = Min,
+                max = Max,
+                out_time_unit = Unit
+               },
+              Value) ->
     validate_interval(Value, Min, Max, Unit);
 validate_type(#kvc_pkix_fullchain_pem_file{}, Value) ->
     kvconf_pkix:validate_pkix_fullchain_pem_file(Value);
@@ -157,11 +167,9 @@ validate_integer(Value, Min, Max) when is_binary(Value) ->
         error:badarg ->
             invalid_value
     end;
-validate_integer(Value, Min, infinity)
-  when is_integer(Value) andalso Min =< Value ->
+validate_integer(Value, Min, infinity) when is_integer(Value) andalso Min =< Value ->
     {ok, Value};
-validate_integer(Value, Min, Max)
-  when is_integer(Value) andalso Min =< Value andalso Value =< Max ->
+validate_integer(Value, Min, Max) when is_integer(Value) andalso Min =< Value andalso Value =< Max ->
     {ok, Value};
 validate_integer(_Value, _Min, _Max) ->
     invalid_value.
@@ -175,11 +183,9 @@ validate_float(Value, Min, Max) when is_binary(Value) ->
         error:badarg ->
             invalid_value
     end;
-validate_float(Value, Min, infinity)
-  when is_float(Value) andalso Min =< Value ->
+validate_float(Value, Min, infinity) when is_float(Value) andalso Min =< Value ->
     {ok, Value};
-validate_float(Value, Min, Max)
-  when is_float(Value) andalso Min =< Value andalso Value =< Max ->
+validate_float(Value, Min, Max) when is_float(Value) andalso Min =< Value andalso Value =< Max ->
     {ok, Value};
 validate_float(_Value, _Min, _Max) ->
     invalid_value.
@@ -238,12 +244,13 @@ validate_list_ipv4_address(Value) when is_list(Value) ->
             invalid_value
     end.
 
+
 validate_list_ipv4_address0([], Acc) ->
     {ok, lists:reverse(Acc)};
-validate_list_ipv4_address0([Value|Rest], Acc) ->
+validate_list_ipv4_address0([Value | Rest], Acc) ->
     case validate_ipv4_address(Value) of
         {ok, IpAddress} ->
-            validate_list_ipv4_address0(Rest, [IpAddress|Acc]);
+            validate_list_ipv4_address0(Rest, [IpAddress | Acc]);
         invalid_value ->
             invalid_value
     end.
@@ -269,12 +276,13 @@ validate_list_ipv6_address(Value) when is_list(Value) ->
             invalid_value
     end.
 
+
 validate_list_ipv6_address0([], Acc) ->
     {ok, lists:reverse(Acc)};
-validate_list_ipv6_address0([Value|Rest], Acc) ->
+validate_list_ipv6_address0([Value | Rest], Acc) ->
     case validate_ipv6_address(Value) of
         {ok, IpAddress} ->
-            validate_list_ipv6_address0(Rest, [IpAddress|Acc]);
+            validate_list_ipv6_address0(Rest, [IpAddress | Acc]);
         invalid_value ->
             invalid_value
     end.
@@ -288,8 +296,9 @@ validate_string(_Value) ->
 
 validate_http_uri(Value) ->
     case uri_string:parse(Value) of
-        #{scheme := Scheme} when Scheme =:= <<"https">>;
-                                 Scheme =:= <<"http">> ->
+        #{scheme := Scheme}
+          when Scheme =:= <<"https">>;
+               Scheme =:= <<"http">> ->
             {ok, Value};
         _ ->
             invalid_value
@@ -298,15 +307,14 @@ validate_http_uri(Value) ->
 
 -define(IN_TIME_UNIT, [ms, s, min, h]).
 
+
 %% TODO(v): infinity 対応
 %% #kvc_interval{min = {10, ms} , max = {1, sec}, out_unit = millisecond}
 -spec validate_interval({non_neg_integer(), kvconf:in_time_unit()} | binary(),
                         {non_neg_integer(), kvconf:in_time_unit()},
                         {non_neg_integer(), kvconf:in_time_unit()} | infinity,
-                        kvconf:out_time_unit()) ->
-    {ok, non_neg_integer()} | invalid_value.
-validate_interval({Value, InUnit}, Min, Max, OutUnit)
-  when is_integer(Value) andalso is_atom(InUnit) ->
+                        kvconf:out_time_unit()) -> {ok, non_neg_integer()} | invalid_value.
+validate_interval({Value, InUnit}, Min, Max, OutUnit) when is_integer(Value) andalso is_atom(InUnit) ->
     case validate_interval_min({Value, InUnit}, Min) of
         ok ->
             case validate_interval_max({Value, InUnit}, Max) of
@@ -398,36 +406,24 @@ time_unit({Integer, h}) ->
 
 
 validate_interval_test() ->
-    ?assertEqual(invalid_value,
-                 validate_interval(<<"120 s">>, {0, ms}, {1, min}, millisecond)),
-    ?assertEqual({ok, 120_000},
-                 validate_interval(<<"120 s">>, {0, ms}, {2, min}, millisecond)),
-    ?assertEqual({ok, 120},
-                 validate_interval(<<"120 ms">>, {0, ms}, {2, min}, millisecond)),
-    ?assertEqual({ok, 7_200_000},
-                 validate_interval(<<"120 min">>, {100, min}, {120, min}, millisecond)),
-    ?assertEqual(invalid_value,
-                 validate_interval(<<"120">>, {121, min}, {130, min}, millisecond)),
-    ?assertEqual(invalid_value,
-                 validate_interval(<<"120 min">>, {100, min}, {119, min}, millisecond)),
-    ?assertEqual({ok, 432_000},
-                 validate_interval(<<"120 h">>, {0, ms}, {120, h}, second)),
+    ?assertEqual(invalid_value, validate_interval(<<"120 s">>, {0, ms}, {1, min}, millisecond)),
+    ?assertEqual({ok, 120_000}, validate_interval(<<"120 s">>, {0, ms}, {2, min}, millisecond)),
+    ?assertEqual({ok, 120}, validate_interval(<<"120 ms">>, {0, ms}, {2, min}, millisecond)),
+    ?assertEqual({ok, 7_200_000}, validate_interval(<<"120 min">>, {100, min}, {120, min}, millisecond)),
+    ?assertEqual(invalid_value, validate_interval(<<"120">>, {121, min}, {130, min}, millisecond)),
+    ?assertEqual(invalid_value, validate_interval(<<"120 min">>, {100, min}, {119, min}, millisecond)),
+    ?assertEqual({ok, 432_000}, validate_interval(<<"120 h">>, {0, ms}, {120, h}, second)),
 
     %% 数値と単位の間にスペースがないのでエラー
-    ?assertEqual(invalid_value,
-                 validate_interval(<<"120s">>, {0, ms}, {2, min}, millisecond)),
+    ?assertEqual(invalid_value, validate_interval(<<"120s">>, {0, ms}, {2, min}, millisecond)),
 
     %% default テスト
-    ?assertEqual({ok, 7_200_000},
-                 validate_interval({120, min}, {100, min}, {120, min}, millisecond)),
-    ?assertEqual({ok, 432_000},
-                 validate_interval({120, h}, {0, ms}, {120, h}, second)),
-    ?assertEqual(invalid_value,
-                 validate_interval({120, min}, {100, min}, {119, min}, millisecond)),
+    ?assertEqual({ok, 7_200_000}, validate_interval({120, min}, {100, min}, {120, min}, millisecond)),
+    ?assertEqual({ok, 432_000}, validate_interval({120, h}, {0, ms}, {120, h}, second)),
+    ?assertEqual(invalid_value, validate_interval({120, min}, {100, min}, {119, min}, millisecond)),
 
     %% infinity
-    ?assertEqual({ok, 1_800_000},
-                 validate_interval({500, h}, {0, ms}, infinity, second)),
+    ?assertEqual({ok, 1_800_000}, validate_interval({500, h}, {0, ms}, infinity, second)),
     ok.
 
 
@@ -435,6 +431,7 @@ validate_atom_test() ->
     ?assertEqual(invalid_value, validate_atom(<<"b">>, [a])),
     ?assertEqual({ok, a}, validate_atom(a, [a])),
     ok.
+
 
 validate_list_atom_test() ->
     ?assertEqual({ok, [a, a]}, validate_list_atom([<<"a">>, a])),
@@ -450,35 +447,37 @@ validate_integer_test() ->
 
 
 validate_ipv4_address_test() ->
-    ?assertEqual({ok, {1,2,3,4}}, validate_ipv4_address({1,2,3,4})),
+    ?assertEqual({ok, {1, 2, 3, 4}}, validate_ipv4_address({1, 2, 3, 4})),
     ok.
 
 
 validate_ipv6_address_test() ->
-    ?assertEqual(invalid_value, validate_ipv6_address({1,2,3,4})),
-    ?assertEqual({ok, {1,2,3,4,1,2,3,4}}, validate_ipv6_address({1,2,3,4,1,2,3,4})),
+    ?assertEqual(invalid_value, validate_ipv6_address({1, 2, 3, 4})),
+    ?assertEqual({ok, {1, 2, 3, 4, 1, 2, 3, 4}}, validate_ipv6_address({1, 2, 3, 4, 1, 2, 3, 4})),
     ok.
 
 
-
 validate_list_ipv4_address_test() ->
-    ?assertEqual(invalid_value, validate_list_ipv4_address([{1,2,3}])),
-    ?assertEqual(invalid_value, validate_list_ipv4_address([{1,2,3,4}, {1,2,3}])),
-    ?assertEqual({ok, [{1,2,3,4}]}, validate_list_ipv4_address([{1,2,3,4}])),
+    ?assertEqual(invalid_value, validate_list_ipv4_address([{1, 2, 3}])),
+    ?assertEqual(invalid_value, validate_list_ipv4_address([{1, 2, 3, 4}, {1, 2, 3}])),
+    ?assertEqual({ok, [{1, 2, 3, 4}]}, validate_list_ipv4_address([{1, 2, 3, 4}])),
     ok.
 
 
 validate_list_ipv6_address_test() ->
-    ?assertEqual(invalid_value, validate_list_ipv6_address([{1,2,3,4,1,2,3}])),
-    ?assertEqual(invalid_value, validate_list_ipv6_address([{1,2,3,4,1,2,3}, {1,2,3}])),
-    ?assertEqual({ok, [{1,2,3,4,1,2,3,4}]}, validate_list_ipv6_address([{1,2,3,4,1,2,3,4}])),
+    ?assertEqual(invalid_value, validate_list_ipv6_address([{1, 2, 3, 4, 1, 2, 3}])),
+    ?assertEqual(invalid_value, validate_list_ipv6_address([{1, 2, 3, 4, 1, 2, 3}, {1, 2, 3}])),
+    ?assertEqual({ok, [{1, 2, 3, 4, 1, 2, 3, 4}]}, validate_list_ipv6_address([{1, 2, 3, 4, 1, 2, 3, 4}])),
     ok.
-
 
 
 validate_one_test() ->
     ?assertEqual({ok, foo},
-                 validate_one(#kvc{key = atom_default, type = #kvc_atom{candidates = [foo, bar]}, default = foo})),
+                 validate_one(#kvc{
+                                key = atom_default,
+                                type = #kvc_atom{candidates = [foo, bar]},
+                                default = foo
+                               })),
     ok.
 
 

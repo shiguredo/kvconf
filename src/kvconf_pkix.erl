@@ -4,7 +4,6 @@
          validate_pkix_privkey_pem_file/1,
          validate_pkix_cert_pem_file/1]).
 
-
 %% TODO: 複数 CA ファイル設定できる vlaidate_pkix_cacert_path で dir を指定できる仕組みを作る
 
 
@@ -54,8 +53,7 @@ validate_pkix_privkey_pem_file(PrivkeyPemFilePath) ->
                 [{_PkiAsn1Type, _Der, not_encrypted}] ->
                     %% TODO: 対応している PKI Asn1Type を指定できるようにする
                     {ok, PrivkeyPemFilePath};
-                [{_PkiAsn1Type1, _Der1, not_encrypted},
-                 {_PkiAsn1Type2, _Der2, not_encrypted}] ->
+                [{_PkiAsn1Type1, _Der1, not_encrypted}, {_PkiAsn1Type2, _Der2, not_encrypted}] ->
                     {ok, PrivkeyPemFilePath};
                 _ ->
                     error
