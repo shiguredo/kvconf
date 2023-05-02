@@ -1,13 +1,15 @@
+name: test
+
 on:
   push:
     paths-ignore:
-    - 'LICENSE'
-    - '**.md'
+      - "LICENSE"
+      - "**.md"
 
 jobs:
-  main:
+  test:
     runs-on: ubuntu-latest
-    if: "! contains(github.event.head_commit.message, 'skip ci')"
+    timeout-minutes: 10
     container:
       image: shiguredo/erlang:otp-26.0-rc3-openssl-3.1.0-ubuntu-22.04-x86_64
     env:
