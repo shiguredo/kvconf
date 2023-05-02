@@ -1,10 +1,14 @@
 -module(kvconf).
 
 -export([initialize/2]).
--export([set_value/2, unset_value/1, get_value/1]).
+-export([set_value/2,
+         unset_value/1,
+         get_value/1]).
 
--export_type([key/0, type/0]).
--export_type([in_time_unit/0, out_time_unit/0]).
+-export_type([key/0,
+              type/0]).
+-export_type([in_time_unit/0,
+              out_time_unit/0]).
 
 -include("kvconf.hrl").
 
@@ -31,8 +35,9 @@
 -type out_time_unit() :: second | millisecond | microsecond.
 
 
--spec initialize([#kvc{}], binary()) -> {ok, [binary()], [{atom(), term()}]} |
-                                        {error, {atom(), key(), any(), non_neg_integer()}}.
+-spec initialize([#kvc{}], binary()) ->
+          {ok, [binary()], [{atom(), term()}]} |
+          {error, term()}.
 initialize(KvcList, Binary) ->
     case parse(Binary) of
         {ok, Configurations, LastLineNumber} ->
@@ -107,6 +112,11 @@ parse(Binary) ->
     parse_lines(#{}, Lines, 1).
 
 
+-spec parse_lines(map(), [binary()], integer()) ->
+          {ok, map(), integer()} |
+          {error,
+           {duplicate_key, binary(), integer()} |
+           {invalid_line_format, binary(), integer()}}.
 parse_lines(Configurations, [], LastLineNumber) ->
     {ok, Configurations, LastLineNumber};
 parse_lines(Configurations, [Line | Lines], LineNumber) ->
@@ -125,9 +135,7 @@ parse_lines(Configurations, [Line | Lines], LineNumber) ->
                         true ->
                             {error, {duplicated_key, Key, LineNumber}};
                         false ->
-                            parse_lines(Configurations#{Key => {Value, Line, LineNumber}},
-                                        Lines,
-                                        LineNumber + 1)
+                            parse_lines(Configurations#{Key => {Value, Line, LineNumber}}, Lines, LineNumber + 1)
                     end
             end
     end.
@@ -139,9 +147,7 @@ parse_lines(Configurations, [Line | Lines], LineNumber) ->
 
 
 unknown_keys_test() ->
-    ?assertEqual([<<"abc">>],
-                 unknown_keys(#{<<"abc">> => a},
-                              [])),
+    ?assertEqual([<<"abc">>], unknown_keys(#{<<"abc">> => a}, [])),
 
     ?assertEqual([<<"abc">>],
                  unknown_keys(#{<<"two_digits">> => 20, <<"abc">> => b},
