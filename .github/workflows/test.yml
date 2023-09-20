@@ -11,11 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     container:
-      image: shiguredo/erlang:otp-26.0-rc3-openssl-3.1.0-ubuntu-22.04-x86_64
-    env:
-      ERL_FLAGS: -enable-feature maybe_expr
+      image: shiguredo/erlang:otp-26.0.2-openssl-3.1.2-ubuntu-22.04-x86_64
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: make compile dialyzer test
       - name: Slack Notification
         if: failure()
