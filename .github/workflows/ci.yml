@@ -1,4 +1,4 @@
-name: test
+name: ci
 
 on:
   push:
@@ -7,11 +7,11 @@ on:
       - "**.md"
 
 jobs:
-  test:
+  ci:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     container:
-      image: shiguredo/erlang:otp-26.0.2-openssl-3.1.2-ubuntu-22.04-x86_64
+      image: shiguredo/shiguredo-erlang:otp-26.0.2-openssl-3.1.2-ubuntu-22.04-x86_64
     steps:
       - uses: actions/checkout@v4
       - run: make compile dialyzer test
