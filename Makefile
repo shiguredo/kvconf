@@ -23,4 +23,4 @@ distclean:
 	@./rebar3 clean --all
 
 publish:
-	@./rebar3 hex publish
+	@./rebar3 hex publish package
