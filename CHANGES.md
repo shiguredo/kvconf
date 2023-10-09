@@ -11,7 +11,11 @@
 
 ## develop
 
-- [CHANGE] rebar3 の minimum_otp_vsn を 26.0 にする
+- [UPDATE] rebar3 を 3.22.1 に上げる
+  - @voluntas
+- [UPDATE] GitHub Actions の docker の OTP を 26.1.1 に上げる
+  - @voluntas
+- [CHANGE] rebar3 の minimum_otp_vsn を 26.1 にする
   - @voluntas
 
 ## 2023.1.0
