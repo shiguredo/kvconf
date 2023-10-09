@@ -11,6 +11,8 @@
 
 ## develop
 
+## 2023.2.0
+
 - [UPDATE] rebar3 を 3.22.1 に上げる
   - @voluntas
 - [UPDATE] GitHub Actions の docker の OTP を 26.1.1 に上げる
