@@ -7,7 +7,7 @@
 ## rebar.conf
 
 ```erlang
-{deps, [{kvconf, "2023.1.0"}]}.
+{deps, [{kvconf, "2023.2.0"}]}.
 ```
 
 ## 設定ファイル例
