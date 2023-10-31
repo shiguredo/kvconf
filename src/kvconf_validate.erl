@@ -418,6 +418,15 @@ validate_interval_test() ->
                                      max = {1, min},
                                      out_time_unit = millisecond
                                     })),
+
+    ?assertEqual({ok, 120_000},
+                 validate_interval(<<"1__2__0__0__0__0 ms">>,
+                                   #kvc_interval{
+                                     min = {0, ms},
+                                     max = {2, min},
+                                     out_time_unit = millisecond
+                                    })),
+
     ?assertEqual({ok, 120_000},
                  validate_interval(<<"120 s">>,
                                    #kvc_interval{
