@@ -82,8 +82,8 @@ validate_type(#kvc_boolean{}, Value) ->
     validate_boolean(Value);
 validate_type(#kvc_http_uri{}, Value) ->
     validate_http_uri(Value);
-validate_type(#kvc_interval{} = KvcInterval, Value) ->
-    validate_interval(Value, KvcInterval);
+validate_type(#kvc_interval{} = Kvc, Value) ->
+    validate_interval(Value, Kvc);
 validate_type(#kvc_pkix_fullchain_pem_file{}, Value) ->
     kvconf_pkix:validate_pkix_fullchain_pem_file(Value);
 validate_type(#kvc_pkix_privkey_pem_file{}, Value) ->
@@ -303,10 +303,10 @@ validate_http_uri(Value) ->
 -define(IN_TIME_UNIT, [ms, s, min, h]).
 
 
-%% TODO(v): infinity 対応
 %% #kvc_interval{min = {10, ms} , max = {1, sec}, out_unit = millisecond}
 -spec validate_interval({non_neg_integer(), kvconf:in_time_unit()} | binary(),
                         #kvc_interval{}) -> {ok, non_neg_integer()} | invalid_value.
+%% デフォルト値は binary ではなく {Value, InUnit} になるのでこの枝が必要になる
 validate_interval({Value, InUnit},
                   #kvc_interval{
                     min = Min,
@@ -323,26 +323,17 @@ validate_interval({Value, InUnit},
         error ->
             invalid_value
     end;
-validate_interval(Value,
-                  #kvc_interval{
-                    min = Min,
-                    max = Max,
-                    out_time_unit = OutUnit,
-                    available_time_units = AvailableTimeUnits
-                   }) when is_binary(Value) ->
+validate_interval(Value, #kvc_interval{} = Kvc) when is_binary(Value) ->
     case binary:split(Value, [<<$\s>>], [global, trim_all]) of
         [RawInteger0, RawInUnit] ->
             try
                 InUnit = binary_to_existing_atom(RawInUnit),
                 maybe
-                    true ?= lists:member(InUnit, ?IN_TIME_UNIT),
                     %% 1_000_000 を 1000000 に変換する
                     RawInteger = binary:replace(RawInteger0, <<"_">>, <<>>, [global]),
                     Integer = binary_to_integer(RawInteger),
-                    ok ?= validate_interval_min({Integer, InUnit}, Min),
-                    ok ?= validate_interval_max({Integer, InUnit}, Max),
-                    ok ?= validate_available_time_unit(InUnit, AvailableTimeUnits),
-                    validate_interval_out_unit({Integer, InUnit}, OutUnit)
+                    true ?= lists:member(InUnit, ?IN_TIME_UNIT),
+                    validate_interval({Integer, InUnit}, Kvc)
                 else
                     error ->
                         invalid_value;
@@ -420,24 +411,96 @@ validate_available_time_unit(InUnit, AvailableTimeUnits) ->
 
 
 validate_interval_test() ->
-    ?assertEqual(invalid_value, validate_interval(<<"120 s">>, #kvc_interval{min = {0, ms}, max = {1, min}, out_time_unit = millisecond})),
-    ?assertEqual({ok, 120_000}, validate_interval(<<"120 s">>, #kvc_interval{min = {0, ms}, max = {2, min}, out_time_unit = millisecond})),
-    ?assertEqual({ok, 120}, validate_interval(<<"120 ms">>, #kvc_interval{min = {0, ms}, max = {2, min}, out_time_unit = millisecond})),
-    ?assertEqual({ok, 7_200_000}, validate_interval(<<"120 min">>, #kvc_interval{min = {100, min}, max = {120, min}, out_time_unit = millisecond})),
-    ?assertEqual(invalid_value, validate_interval(<<"120">>, #kvc_interval{min = {121, min}, max = {130, min}, out_time_unit = millisecond})),
-    ?assertEqual(invalid_value, validate_interval(<<"120 min">>, #kvc_interval{min = {100, min}, max = {119, min}, out_time_unit = millisecond})),
-    ?assertEqual({ok, 432_000}, validate_interval(<<"120 h">>, #kvc_interval{min = {0, ms}, max = {120, h}, out_time_unit = second})),
+    ?assertEqual(invalid_value,
+                 validate_interval(<<"120 s">>,
+                                   #kvc_interval{
+                                     min = {0, ms},
+                                     max = {1, min},
+                                     out_time_unit = millisecond
+                                    })),
+    ?assertEqual({ok, 120_000},
+                 validate_interval(<<"120 s">>,
+                                   #kvc_interval{
+                                     min = {0, ms},
+                                     max = {2, min},
+                                     out_time_unit = millisecond
+                                    })),
+    ?assertEqual({ok, 120},
+                 validate_interval(<<"120 ms">>,
+                                   #kvc_interval{
+                                     min = {0, ms},
+                                     max = {2, min},
+                                     out_time_unit = millisecond
+                                    })),
+    ?assertEqual({ok, 7_200_000},
+                 validate_interval(<<"120 min">>,
+                                   #kvc_interval{
+                                     min = {100, min},
+                                     max = {120, min},
+                                     out_time_unit = millisecond
+                                    })),
+    ?assertEqual(invalid_value,
+                 validate_interval(<<"120">>,
+                                   #kvc_interval{
+                                     min = {121, min},
+                                     max = {130, min},
+                                     out_time_unit = millisecond
+                                    })),
+    ?assertEqual(invalid_value,
+                 validate_interval(<<"120 min">>,
+                                   #kvc_interval{
+                                     min = {100, min},
+                                     max = {119, min},
+                                     out_time_unit = millisecond
+                                    })),
+    ?assertEqual({ok, 432_000},
+                 validate_interval(<<"120 h">>,
+                                   #kvc_interval{
+                                     min = {0, ms},
+                                     max = {120, h},
+                                     out_time_unit = second
+                                    })),
 
     %% 数値と単位の間にスペースがないのでエラー
-    ?assertEqual(invalid_value, validate_interval(<<"120s">>, #kvc_interval{min = {0, ms}, max = {2, min}, out_time_unit = millisecond})),
+    ?assertEqual(invalid_value,
+                 validate_interval(<<"120s">>,
+                                   #kvc_interval{
+                                     min = {0, ms},
+                                     max = {2, min},
+                                     out_time_unit = millisecond
+                                    })),
 
     %% default テスト
-    ?assertEqual({ok, 7_200_000}, validate_interval({120, min}, #kvc_interval{min = {100, min}, max = {120, min}, out_time_unit = millisecond})),
-    ?assertEqual({ok, 432_000}, validate_interval({120, h}, #kvc_interval{min = {0, ms}, max = {120, h}, out_time_unit = second})),
-    ?assertEqual(invalid_value, validate_interval({120, min}, #kvc_interval{min = {100, min}, max = {119, min}, out_time_unit = millisecond})),
+    ?assertEqual({ok, 7_200_000},
+                 validate_interval({120, min},
+                                   #kvc_interval{
+                                     min = {100, min},
+                                     max = {120, min},
+                                     out_time_unit = millisecond
+                                    })),
+    ?assertEqual({ok, 432_000},
+                 validate_interval({120, h},
+                                   #kvc_interval{
+                                     min = {0, ms},
+                                     max = {120, h},
+                                     out_time_unit = second
+                                    })),
+    ?assertEqual(invalid_value,
+                 validate_interval({120, min},
+                                   #kvc_interval{
+                                     min = {100, min},
+                                     max = {119, min},
+                                     out_time_unit = millisecond
+                                    })),
 
     %% infinity
-    ?assertEqual({ok, 1_800_000}, validate_interval({500, h}, #kvc_interval{min = {0, ms}, max = infinity, out_time_unit = second})),
+    ?assertEqual({ok, 1_800_000},
+                 validate_interval({500, h},
+                                   #kvc_interval{
+                                     min = {0, ms},
+                                     max = infinity,
+                                     out_time_unit = second
+                                    })),
 
     %% h のみで h 指定してるのでよし
     ?assertEqual({ok, 1_800_000},
