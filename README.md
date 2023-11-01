@@ -1,13 +1,19 @@
 # kvconf
 
-- kvconf は Erlang アプリケーション時に Erlang Term を設定ファイルに疲れた人のための仕組みです
+![GitHub Actions workflow](https://github.com/shiguredo/kvconf/actions/workflows/ci.yml/badge.svg)
+[![GitHub tag](https://img.shields.io/github/tag/shiguredo/kvconf.svg)](https://github.com/shiguredo/kvconf)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+- kvconf は Erlang アプリケーションで Erlang Term を設定ファイルに利用するのに疲れた人のための仕組みです
+- INI 形式ベースで、文字列は `""` を囲わず、コメントは `#` を採用しています
+- INI 形式のセクション機能は利用できない
 - 設定ファイルに対するバリデーションを Erlang のレコードを利用して定義することができるため Dialyzer の恩恵を受けることができます
-- 基本は INI 形式で、文字列は `""` を囲わず、コメントは `#` を採用しています
+
 
 ## rebar.conf
 
 ```erlang
-{deps, [{kvconf, "2023.1.0"}]}.
+{deps, [{kvconf, "2023.2.0"}]}.
 ```
 
 ## 設定ファイル例
