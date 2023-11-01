@@ -11,6 +11,8 @@
 
 ## develop
 
+## 2023.3.0
+
 - [ADD] `#kvc_interval` に利用可能な時間の単位を `available_time_units` で設定できるようにする
   - デフォルトも影響受けるので要注意
   - ややこしいが min/max は影響を受けない
