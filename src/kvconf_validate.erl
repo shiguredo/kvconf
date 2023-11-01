@@ -407,6 +407,24 @@ validate_available_time_unit(InUnit, AvailableTimeUnits) when is_list(AvailableT
 
 
 validate_interval_test() ->
+    %% そもそも数字じゃない
+    ?assertEqual(invalid_value,
+                 validate_interval(<<"one min">>,
+                                   #kvc_interval{
+                                     min = {0, ms},
+                                     max = {1, min},
+                                     out_time_unit = millisecond
+                                    })),
+
+    %% 見知らぬ単位
+    ?assertEqual(invalid_value,
+                 validate_interval(<<"120 kvc_interval">>,
+                                   #kvc_interval{
+                                     min = {0, ms},
+                                     max = {1, min},
+                                     out_time_unit = millisecond
+                                    })),
+
     ?assertEqual(invalid_value,
                  validate_interval(<<"120 s">>,
                                    #kvc_interval{
