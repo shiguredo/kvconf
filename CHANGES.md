@@ -11,6 +11,15 @@
 
 ## develop
 
+- [ADD] `#kvc_interval` に利用可能な時間の単位を `available_time_units` で設定できるようにする
+  - デフォルトも影響受けるので要注意
+  - ややこしいが min/max は影響を受けない
+  - `available_time_units` はデフォルト `undefined` で全ての単位が指定可能
+  - `available_time_units` は `[min, s]` とかで指定できる、この場合単位に min と s しか指定できなくなる
+  - @voluntas
+- [UPDATE] GitHub Actions の docker イメージを OTP 26.1.2 / OpenSSL 3.1.3 に上げる
+  - @voluntas
+
 ## 2023.2.0
 
 - [UPDATE] rebar3 を 3.22.1 に上げる
