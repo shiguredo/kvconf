@@ -396,16 +396,13 @@ time_unit({Integer, h}) ->
           error.
 validate_available_time_unit(_InUnit, undefined) ->
     ok;
-validate_available_time_unit(InUnit, AvailableTimeUnits) ->
+validate_available_time_unit(InUnit, AvailableTimeUnits) when is_list(AvailableTimeUnits) ->
     case lists:member(InUnit, AvailableTimeUnits) of
         true ->
             ok;
         false ->
             error
-    end;
-%% undefined でも [] でもないのでエラー
-validate_available_time_unit(_InUnit, _AvailableTimeUnits) ->
-    error.
+    end.
 
 
 -ifdef(TEST).

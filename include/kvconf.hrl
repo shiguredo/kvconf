@@ -39,7 +39,7 @@
           %% undefined は全て利用可能
           %% [min] と指定すると min しか指定できなくなる
           %% [min, s] と指定すると min と s しか指定できなくなる
-          available_time_units = undefined :: undefined | [kvconf:out_time_unit()]
+          available_time_units = undefined :: undefined | [kvconf:in_time_unit()]
          }).
 
 %% 中間証明書を含んだ証明書
