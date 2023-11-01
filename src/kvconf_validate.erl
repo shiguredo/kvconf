@@ -315,11 +315,14 @@ validate_interval({Value, InUnit},
                     available_time_units = AvailableTimeUnits
                    }) when is_integer(Value) andalso is_atom(InUnit) ->
     maybe
+        true ?= lists:member(InUnit, ?IN_TIME_UNIT),
         ok ?= validate_interval_min({Value, InUnit}, Min),
         ok ?= validate_interval_max({Value, InUnit}, Max),
         ok ?= validate_available_time_unit(InUnit, AvailableTimeUnits),
         validate_interval_out_unit({Value, InUnit}, OutUnit)
     else
+        false ->
+            invalid_value;
         error ->
             invalid_value
     end;
@@ -328,18 +331,10 @@ validate_interval(Value, #kvc_interval{} = Kvc) when is_binary(Value) ->
         [RawInteger0, RawInUnit] ->
             try
                 InUnit = binary_to_existing_atom(RawInUnit),
-                maybe
-                    %% 1_000_000 を 1000000 に変換する
-                    RawInteger = binary:replace(RawInteger0, <<"_">>, <<>>, [global]),
-                    Integer = binary_to_integer(RawInteger),
-                    true ?= lists:member(InUnit, ?IN_TIME_UNIT),
-                    validate_interval({Integer, InUnit}, Kvc)
-                else
-                    error ->
-                        invalid_value;
-                    false ->
-                        invalid_value
-                end
+                %% 1_000_000 を 1000000 に変換する
+                RawInteger = binary:replace(RawInteger0, <<"_">>, <<>>, [global]),
+                Integer = binary_to_integer(RawInteger),
+                validate_interval({Integer, InUnit}, Kvc)
             catch
                 error:badarg ->
                     invalid_value
