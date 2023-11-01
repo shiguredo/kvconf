@@ -332,6 +332,7 @@ validate_interval(Value, #kvc_interval{} = Kvc) when is_binary(Value) ->
             try
                 InUnit = binary_to_existing_atom(RawInUnit),
                 %% 1_000_000 を 1000000 に変換する
+                %% 雑なので 1_____________________000 も許容される
                 RawInteger = binary:replace(RawInteger0, <<"_">>, <<>>, [global]),
                 Integer = binary_to_integer(RawInteger),
                 validate_interval({Integer, InUnit}, Kvc)
