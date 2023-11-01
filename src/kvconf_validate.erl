@@ -402,7 +402,10 @@ validate_available_time_unit(InUnit, AvailableTimeUnits) ->
             ok;
         false ->
             error
-    end.
+    end;
+%% undefined でも [] でもないのでエラー
+validate_available_time_unit(_InUnit, _AvailableTimeUnits) ->
+    error.
 
 
 -ifdef(TEST).
