@@ -13,6 +13,7 @@
 
 - [ADD] `#kvc_interval` に利用可能な時間の単位を `available_time_units` で設定できるようにする
   - デフォルトも影響受けるので要注意
+  - ややこしいが min/max は影響を受けない
   - `available_time_units` はデフォルト `undefined` で全ての単位が指定可能
   - `available_time_units` は `[min, s]` とかで指定できる、この場合単位に min と s しか指定できなくなる
   - @voluntas
