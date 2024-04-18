@@ -14,7 +14,7 @@ validate_pkix_fullchain_pem_file(FullchainPemFilePath) ->
             case public_key:pem_decode(Bin) of
                 [] ->
                     error;
-                PemEntryList when is_list(PemEntryList) ->
+                PemEntryList ->
                     %% PemEntry が全て {'Certificate', _, not_encrypted} であることを確認する
                     F = fun({'Certificate', Der, not_encrypted}) ->
                                 try
