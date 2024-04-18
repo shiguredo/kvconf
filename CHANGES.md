@@ -11,6 +11,13 @@
 
 ## develop
 
+- [UPDATE] rebar3 を 3.23.0 に上げる
+  - @voluntas
+- [UPDATE] GitHub Actions の docker の OTP を 27.0-rc2 に上げる
+  - @voluntas
+- [CHANGE] rebar3 の minimum_otp_vsn を 27.0 にする
+  - @voluntas
+
 ## 2023.3.0
 
 - [ADD] `#kvc_interval` に利用可能な時間の単位を `available_time_units` で設定できるようにする
