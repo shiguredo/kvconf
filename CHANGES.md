@@ -11,9 +11,11 @@
 
 ## develop
 
+- [ADD] `,` 区切りの文字列リストを読み込める `#kvc_list_string{}` を追加
+  - @voluntas
 - [UPDATE] rebar3 を 3.23.0 に上げる
   - @voluntas
-- [UPDATE] GitHub Actions の docker の OTP を 27.0-rc2 に上げる
+- [UPDATE] GitHub Actions の docker の OTP を 27.0 に上げる
   - @voluntas
 - [CHANGE] rebar3 の minimum_otp_vsn を 27.0 にする
   - @voluntas
@@ -143,7 +145,7 @@
 
 - [CHANGE] `#kvc_interval{}` の単位を指定する場合は間にスペースをいれる `10 s`
   - `数値と単位を分割するために空白（space）を用いる`
-    - https://ja.wikipedia.org/wiki/%E5%9B%BD%E9%9A%9B%E5%8D%98%E4%BD%8D%E7%B3%BB
+    - <https://ja.wikipedia.org/wiki/%E5%9B%BD%E9%9A%9B%E5%8D%98%E4%BD%8D%E7%B3%BB>
   - @voluntas
 
 ## 2020.9.1
