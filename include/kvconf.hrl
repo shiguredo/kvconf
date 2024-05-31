@@ -8,6 +8,8 @@
 
 -record(kvc_string, {}).
 
+-record(kvc_list_string, {}).
+
 -record(kvc_integer, {
           min :: integer(),
           max :: integer() | infinity

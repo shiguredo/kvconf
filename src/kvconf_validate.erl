@@ -64,6 +64,8 @@ validate_type(#kvc_list_atom{}, Value) ->
     validate_list_atom(Value);
 validate_type(#kvc_string{}, Value) ->
     validate_string(Value);
+validate_type(#kvc_list_string{}, Value) ->
+    validate_list_string(Value);
 validate_type(#kvc_integer{min = Min, max = Max}, Value) ->
     validate_integer(Value, Min, Max);
 validate_type(#kvc_float{min = Min, max = Max}, Value) ->
@@ -286,6 +288,17 @@ validate_list_ipv6_address0([Value | Rest], Acc) ->
 validate_string(Value) when is_binary(Value) ->
     {ok, Value};
 validate_string(_Value) ->
+    invalid_value.
+
+
+validate_list_string(Value) when is_binary(Value) ->
+    case binary:split(Value, [<<",">>, <<$\s>>], [trim_all, global]) of
+        [] ->
+            {ok, []};
+        Values ->
+            {ok, Values}
+    end;
+validate_list_string(_Values) ->
     invalid_value.
 
 
@@ -609,6 +622,20 @@ validate_one_test() ->
                                 type = #kvc_atom{candidates = [foo, bar]},
                                 default = foo
                                })),
+    ok.
+
+
+validate_list_string_test() ->
+    ?assertEqual({ok, [~"x-abc-efg", ~"x-y-z"]},
+                 validate_list_string(~"x-abc-efg, x-y-z")),
+    ?assertEqual({ok, []},
+                 validate_list_string(~",,,")),
+    ?assertEqual({ok, []},
+                 validate_list_string(~"")),
+    ?assertEqual({ok, [~"a", ~"b"]},
+                 validate_list_string(~"a,                    , , b")),
+    ?assertEqual({ok, [~"a", ~"b"]},
+                 validate_list_string(~"           a,                    , , b                  ")),
     ok.
 
 
