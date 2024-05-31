@@ -16,6 +16,7 @@
 -type type() :: #kvc_atom{} |
                 #kvc_list_atom{} |
                 #kvc_string{} |
+                #kvc_list_string{} |
                 #kvc_integer{} |
                 #kvc_float{} |
                 #kvc_boolean{} |
