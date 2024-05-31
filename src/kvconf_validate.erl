@@ -636,6 +636,10 @@ validate_list_string_test() ->
                  validate_list_string(~"a,                    , , b")),
     ?assertEqual({ok, [~"a", ~"b"]},
                  validate_list_string(~"           a,                    , , b                  ")),
+
+    ?assertEqual(invalid_value,
+                 validate_list_string(1)),
+
     ok.
 
 
