@@ -11,6 +11,8 @@
 
 ## develop
 
+## 2024.2.0
+
 - [ADD] `#kvc_list_string{}` に lowercase を追加する
   
   - true にすると lowercase で返す
