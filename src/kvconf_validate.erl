@@ -64,8 +64,8 @@ validate_type(#kvc_list_atom{}, Value) ->
     validate_list_atom(Value);
 validate_type(#kvc_string{}, Value) ->
     validate_string(Value);
-validate_type(#kvc_list_string{}, Value) ->
-    validate_list_string(Value);
+validate_type(#kvc_list_string{lowercase = Lowercase}, Value) ->
+    validate_list_string(Value, Lowercase);
 validate_type(#kvc_integer{min = Min, max = Max}, Value) ->
     validate_integer(Value, Min, Max);
 validate_type(#kvc_float{min = Min, max = Max}, Value) ->
@@ -291,14 +291,16 @@ validate_string(_Value) ->
     invalid_value.
 
 
-validate_list_string(Value) when is_binary(Value) ->
+validate_list_string(Value, true) when is_binary(Value) ->
+    validate_list_string(list_to_binary(string:to_lower(binary_to_list(Value))), false);
+validate_list_string(Value, false) when is_binary(Value) ->
     case binary:split(Value, [<<",">>, <<$\s>>], [trim_all, global]) of
         [] ->
             {ok, []};
         Values ->
             {ok, Values}
     end;
-validate_list_string(_Values) ->
+validate_list_string(_Values, _Lowercase) ->
     invalid_value.
 
 
@@ -627,18 +629,21 @@ validate_one_test() ->
 
 validate_list_string_test() ->
     ?assertEqual({ok, [~"x-abc-efg", ~"x-y-z"]},
-                 validate_list_string(~"x-abc-efg, x-y-z")),
+                 validate_list_string(~"X-ABC-EFG, X-Y-Z", true)),
+
+    ?assertEqual({ok, [~"x-abc-efg", ~"x-y-z"]},
+                 validate_list_string(~"x-abc-efg, x-y-z", false)),
     ?assertEqual({ok, []},
-                 validate_list_string(~",,,")),
+                 validate_list_string(~",,,", false)),
     ?assertEqual({ok, []},
-                 validate_list_string(~"")),
+                 validate_list_string(~"", false)),
     ?assertEqual({ok, [~"a", ~"b"]},
-                 validate_list_string(~"a,                    , , b")),
+                 validate_list_string(~"a,                    , , b", false)),
     ?assertEqual({ok, [~"a", ~"b"]},
-                 validate_list_string(~"           a,                    , , b                  ")),
+                 validate_list_string(~"           a,                    , , b                  ", false)),
 
     ?assertEqual(invalid_value,
-                 validate_list_string(1)),
+                 validate_list_string(1, false)),
 
     ok.
 
