@@ -291,6 +291,20 @@ validate_string(_Value) ->
     invalid_value.
 
 
+%% is_list/1 チェックは default 用
+validate_list_string(Value, _) when is_list(Value) ->
+    %% 全部バイナリかどうかを確認する
+    F = fun(V) when is_binary(V) ->
+                true;
+           (_) ->
+                false
+        end,
+    case lists:all(F, Value) of
+        true ->
+            {ok, Value};
+        false ->
+            invalid_value
+    end;
 validate_list_string(Value, true) when is_binary(Value) ->
     validate_list_string(list_to_binary(string:to_lower(binary_to_list(Value))), false);
 validate_list_string(Value, false) when is_binary(Value) ->
@@ -628,6 +642,10 @@ validate_one_test() ->
 
 
 validate_list_string_test() ->
+    %% デフォルト
+    ?assertEqual({ok, [~"x-abc-efg", ~"x-y-z"]},
+                 validate_list_string([~"x-abc-efg", ~"x-y-z"], true)),
+
     ?assertEqual({ok, [~"x-abc-efg", ~"x-y-z"]},
                  validate_list_string(~"X-ABC-EFG, X-Y-Z", true)),
 
@@ -641,6 +659,10 @@ validate_list_string_test() ->
                  validate_list_string(~"a,                    , , b", false)),
     ?assertEqual({ok, [~"a", ~"b"]},
                  validate_list_string(~"           a,                    , , b                  ", false)),
+
+    %% デフォルト
+    ?assertEqual(invalid_value,
+                 validate_list_string([~"x-abc-efg", 1], true)),
 
     ?assertEqual(invalid_value,
                  validate_list_string(1, false)),
