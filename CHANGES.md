@@ -11,6 +11,15 @@
 
 ## develop
 
+## 2024.2.0
+
+- [ADD] `#kvc_list_string{}` に lowercase を追加する
+  
+  - true にすると lowercase で返す
+  - @voluntas
+
+## 2024.1.0
+
 - [ADD] `,` 区切りの文字列リストを読み込める `#kvc_list_string{}` を追加
   - @voluntas
 - [UPDATE] rebar3 を 3.23.0 に上げる

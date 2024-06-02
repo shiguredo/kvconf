@@ -8,7 +8,9 @@
 
 -record(kvc_string, {}).
 
--record(kvc_list_string, {}).
+-record(kvc_list_string, {
+          lowercase = false :: boolean()
+         }).
 
 -record(kvc_integer, {
           min :: integer(),
