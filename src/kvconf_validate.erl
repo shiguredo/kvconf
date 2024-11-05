@@ -141,18 +141,21 @@ validate_list_atom(Values, Candidates) when is_list(Values) ->
             invalid_value
     end;
 validate_list_atom(Value, Candidates) when is_binary(Value) ->
-    Values = binary:split(Value, [<<",">>, <<$\s>>], [trim_all, global]),
-    validate_list_atom0(Values, Candidates, []).
-
-
-validate_list_atom0([], _Candidates, Acc) ->
-    {ok, lists:reverse(Acc)};
-validate_list_atom0([Value | Rest], Candidates, Acc) ->
-    case validate_atom(Value, Candidates) of
-        {ok, Atom} ->
-            validate_list_atom0(Rest, Candidates, [Atom | Acc]);
+    Values0 = binary:split(Value, [<<",">>, <<$\s>>], [trim_all, global]),
+    case lists:foldl(fun(V, Acc) ->
+                             case validate_atom(V, Candidates) of
+                                 {ok, Atom} ->
+                                     [Atom | Acc];
+                                 invalid_value ->
+                                     invalid_value
+                             end
+                     end,
+                     [],
+                     Values0) of
         invalid_value ->
-            invalid_value
+            invalid_value;
+        Values ->
+            {ok, lists:reverse(Values)}
     end.
 
 
