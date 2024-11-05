@@ -630,8 +630,11 @@ validate_list_atom_test() ->
 
     %% 見知らぬ文字
     ?assertEqual(invalid_value, validate_list_atom(~"X", [a, b, c])),
+    ?assertEqual(invalid_value, validate_list_atom(~"a,b,d", [a, b, c])),
+
     %% 大文字小文字認識します
     ?assertEqual(invalid_value, validate_list_atom(~"A", [a, b, c])),
+
     %% デフォルトに見知らぬ文字
     ?assertEqual(invalid_value, validate_list_atom([a, b, d], [a, b, c])),
     ok.
