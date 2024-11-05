@@ -624,6 +624,7 @@ validate_list_atom_test() ->
 
     %% スペースで間隔空ける
     ?assertEqual({ok, [a, b, c]}, validate_list_atom(~"a, b,       c", [a, b, c])),
+    ?assertEqual({ok, [a, b, c]}, validate_list_atom(~"                 a, b ,       c     ", [a, b, c])),
 
     %% 空文字は [] になる
     ?assertEqual({ok, []}, validate_list_atom(~"", [a, b, c])),
