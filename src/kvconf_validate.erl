@@ -612,10 +612,24 @@ validate_atom_test() ->
 
 
 validate_list_atom_test() ->
+    %% デフォルト
     ?assertEqual({ok, [a, b, c]}, validate_list_atom([a, b, c], [a, b, c])),
-    ?assertEqual({ok, [a, b, c]}, validate_list_atom(<<"a, b, c">>, [a, b, c])),
-    ?assertEqual({ok, [a, b, c]}, validate_list_atom(<<"a,b,c">>, [a, b, c])),
-    ?assertEqual({ok, [a, b, c]}, validate_list_atom(<<"a, b,       c">>, [a, b, c])),
+
+    %% 期待値
+    ?assertEqual({ok, [a, b, c]}, validate_list_atom(~"a,b,c", [a, b, c])),
+    ?assertEqual({ok, [a, b, c]}, validate_list_atom(~"a, b, c", [a, b, c])),
+
+    %% スペースで間隔空ける
+    ?assertEqual({ok, [a, b, c]}, validate_list_atom(~"a, b,       c", [a, b, c])),
+
+    %% 空文字は [] になる
+    ?assertEqual({ok, []}, validate_list_atom(~"", [a, b, c])),
+
+    %% 見知らぬ文字
+    ?assertEqual(invalid_value, validate_list_atom(~"X", [a, b, c])),
+    %% 大文字小文字認識します
+    ?assertEqual(invalid_value, validate_list_atom(~"A", [a, b, c])),
+    %% デフォルトに見知らぬ文字
     ?assertEqual(invalid_value, validate_list_atom([a, b, d], [a, b, c])),
     ok.
 
@@ -678,6 +692,9 @@ validate_list_string_test() ->
                  validate_list_string(~"a,                    , , b", false)),
     ?assertEqual({ok, [~"a", ~"b"]},
                  validate_list_string(~"           a,                    , , b                  ", false)),
+
+    ?assertEqual({ok, []},
+                 validate_list_string(~"", false)),
 
     %% デフォルト
     ?assertEqual(invalid_value,
