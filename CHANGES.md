@@ -11,6 +11,9 @@
 
 ## develop
 
+- [ADD] `#kvc_list_atom{}` に candidates を追加する
+  - @voluntas
+
 ## 2024.2.1
 
 - [ADD] `#kvc_list_string{}` のデフォルト値もチェックするようにする
