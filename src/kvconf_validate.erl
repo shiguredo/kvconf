@@ -60,8 +60,8 @@ validate_one(#kvc{required = false, type = Type}, Value) ->
 
 validate_type(#kvc_atom{candidates = Candidates}, Value) ->
     validate_atom(Value, Candidates);
-validate_type(#kvc_list_atom{}, Value) ->
-    validate_list_atom(Value);
+validate_type(#kvc_list_atom{candidates = Candidates}, Value) ->
+    validate_list_atom(Value, Candidates);
 validate_type(#kvc_string{}, Value) ->
     validate_string(Value);
 validate_type(#kvc_list_string{lowercase = Lowercase}, Value) ->
@@ -96,7 +96,6 @@ validate_type(#kvc_pkix_cert_pem_file{}, Value) ->
 
 validate_atom(_Value, []) ->
     invalid_value;
-
 %% default チェックの枝
 validate_atom(Value, Candidates) when is_atom(Value) ->
     F = fun({_, Candidate}) when Candidate =:= Value ->
@@ -125,17 +124,36 @@ validate_atom(Value, [_ | Candidates]) ->
     validate_atom(Value, Candidates).
 
 
-validate_list_atom(Value) when is_binary(Value) ->
-    RawListAtom = binary:split(Value, [<<",">>, <<$\s>>], [trim_all, global]),
-    validate_list_atom(RawListAtom);
-%% デフォルトチェック
-validate_list_atom(Value) when is_list(Value) ->
-    F = fun(V) when is_atom(V) ->
-                V;
-           (V) when is_binary(V) ->
-                binary_to_atom(V, utf8)
+%% デフォルトチェックの枝
+validate_list_atom(Values, Candidates) when is_list(Values) ->
+    F = fun(V) ->
+                case validate_atom(V, Candidates) of
+                    {ok, _} ->
+                        true;
+                    _ ->
+                        false
+                end
         end,
-    {ok, lists:map(F, Value)}.
+    case lists:all(F, Values) of
+        true ->
+            {ok, Values};
+        false ->
+            invalid_value
+    end;
+validate_list_atom(Value, Candidates) when is_binary(Value) ->
+    Values = binary:split(Value, [<<",">>, <<$\s>>], [trim_all, global]),
+    validate_list_atom0(Values, Candidates, []).
+
+
+validate_list_atom0([], _Candidates, Acc) ->
+    {ok, lists:reverse(Acc)};
+validate_list_atom0([Value | Rest], Candidates, Acc) ->
+    case validate_atom(Value, Candidates) of
+        {ok, Atom} ->
+            validate_list_atom0(Rest, Candidates, [Atom | Acc]);
+        invalid_value ->
+            invalid_value
+    end.
 
 
 validate_port_number(Value) ->
@@ -594,10 +612,11 @@ validate_atom_test() ->
 
 
 validate_list_atom_test() ->
-    ?assertEqual({ok, [a, a]}, validate_list_atom([<<"a">>, a])),
-    ?assertEqual({ok, [a, b, c]}, validate_list_atom(<<"a, b, c">>)),
-    ?assertEqual({ok, [a, b, c]}, validate_list_atom(<<"a,b,c">>)),
-    ?assertEqual({ok, [a, b, c]}, validate_list_atom(<<"a, b,       c">>)),
+    ?assertEqual({ok, [a, b, c]}, validate_list_atom([a, b, c], [a, b, c])),
+    ?assertEqual({ok, [a, b, c]}, validate_list_atom(<<"a, b, c">>, [a, b, c])),
+    ?assertEqual({ok, [a, b, c]}, validate_list_atom(<<"a,b,c">>, [a, b, c])),
+    ?assertEqual({ok, [a, b, c]}, validate_list_atom(<<"a, b,       c">>, [a, b, c])),
+    ?assertEqual(invalid_value, validate_list_atom([a, b, d], [a, b, c])),
     ok.
 
 
