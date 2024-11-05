@@ -11,6 +11,8 @@
 
 ## develop
 
+- [UPDATE] GitHub Actions の docker の OTP を 27.1.2 に上げる
+  - @voluntas
 - [ADD] `#kvc_list_atom{}` に candidates を追加する
   - @voluntas
 
