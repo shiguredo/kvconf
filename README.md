@@ -13,7 +13,7 @@
 ## rebar.conf
 
 ```erlang
-{deps, [{kvconf, "2023.2.0"}]}.
+{deps, [{kvconf, "2024.2.1"}]}.
 ```
 
 ## 設定ファイル例
@@ -42,7 +42,7 @@ key = value
 ## ライセンス
 
 ```
-Copyright 2019-2023, Shiguredo Inc.
+Copyright 2019-2024, Shiguredo Inc.
 Copyright 2019-2021, Shunichi Shinohara (Original Author)
 
 Licensed under the Apache License, Version 2.0 (the "License");

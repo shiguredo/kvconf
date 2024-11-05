@@ -4,7 +4,9 @@
           candidates :: [atom() | {binary(), atom()}]
          }).
 
--record(kvc_list_atom, {}).
+-record(kvc_list_atom, {
+          candidates :: [atom() | {binary(), atom()}]
+         }).
 
 -record(kvc_string, {}).
 

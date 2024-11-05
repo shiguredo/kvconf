@@ -11,6 +11,13 @@
 
 ## develop
 
+- [UPDATE] GitHub Actions の docker の OTP を 27.1.2 に上げる
+  - @voluntas
+- [UPDATE] rebar3 を 3.24.0 に上げる
+  - @voluntas
+- [ADD] `#kvc_list_atom{}` に candidates を追加する
+  - @voluntas
+
 ## 2024.2.1
 
 - [ADD] `#kvc_list_string{}` のデフォルト値もチェックするようにする
