@@ -11,6 +11,13 @@
 
 ## develop
 
+## 2024.3.1
+
+- [FIX] `#kvc_http_uri{}` のバリデーションを修正する
+  - @voluntas
+
+## 2024.3.0
+
 - [UPDATE] GitHub Actions の docker の OTP を 27.1.2 に上げる
   - @voluntas
 - [UPDATE] rebar3 を 3.24.0 に上げる

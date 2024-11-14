@@ -721,16 +721,25 @@ validate_list_string_test() ->
 validate_http_uri_test() ->
     %% path /spam query egg=ham
     ?assertMatch({ok, _}, validate_http_uri(<<"https://example.com:5000/spam?egg=ham">>)),
+
     %% path /spam
     ?assertMatch({ok, _}, validate_http_uri(<<"https://example.com:5000/spam">>)),
     %% path /
+
     ?assertMatch({ok, _}, validate_http_uri(<<"https://example.com:5000/">>)),
     %% port 5000
     ?assertMatch({ok, _}, validate_http_uri(<<"https://example.com:5000">>)),
+
+    %% user
+    ?assertMatch({ok, _}, validate_http_uri(<<"https://user@example.com">>)),
+    %% user:pass
+    ?assertMatch({ok, _}, validate_http_uri(<<"http://user:pass@example.com">>)),
+
     %% https
     ?assertMatch({ok, _}, validate_http_uri(<<"https://example.com">>)),
     %% http
     ?assertMatch({ok, _}, validate_http_uri(<<"http://example.com">>)),
+
     %% ホストはある、パスは空文字
     ?assertMatch({ok, _}, validate_http_uri(<<"http://com">>)),
 
