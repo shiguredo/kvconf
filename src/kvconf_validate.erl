@@ -341,9 +341,14 @@ validate_list_string(_Values, _Lowercase) ->
 
 validate_http_uri(Value) ->
     case uri_string:parse(Value) of
-        #{scheme := Scheme}
-          when Scheme =:= <<"https">>;
-               Scheme =:= <<"http">> ->
+        #{scheme := Scheme} = Uri
+          when (Scheme =:= <<"https">> orelse Scheme =:= <<"http">>) andalso
+               %% host があること
+               is_map_key(host, Uri) andalso
+               %% host が <<>> ではないこと
+               map_get(host, Uri) =/= <<>> andalso
+               %% path があること
+               is_map_key(path, Uri) ->
             {ok, Value};
         _ ->
             invalid_value
@@ -710,6 +715,41 @@ validate_list_string_test() ->
     ?assertEqual(invalid_value,
                  validate_list_string(1, false)),
 
+    ok.
+
+
+validate_http_uri_test() ->
+    %% path /spam query egg=ham
+    ?assertMatch({ok, _}, validate_http_uri(<<"https://example.com:5000/spam?egg=ham">>)),
+    %% path /spam
+    ?assertMatch({ok, _}, validate_http_uri(<<"https://example.com:5000/spam">>)),
+    %% path /
+    ?assertMatch({ok, _}, validate_http_uri(<<"https://example.com:5000/">>)),
+    %% port 5000
+    ?assertMatch({ok, _}, validate_http_uri(<<"https://example.com:5000">>)),
+    %% https
+    ?assertMatch({ok, _}, validate_http_uri(<<"https://example.com">>)),
+    %% http
+    ?assertMatch({ok, _}, validate_http_uri(<<"http://example.com">>)),
+    %% ホストはある、パスは空文字
+    ?assertMatch({ok, _}, validate_http_uri(<<"http://com">>)),
+
+    %% invalid_value
+
+    %% :/// で :// じゃない
+    ?assertEqual(invalid_value, validate_http_uri(<<"http:///www.example.com/">>)),
+
+    %% :/ で :// じゃない
+    ?assertEqual(invalid_value, validate_http_uri(<<"http:/www.example.com/">>)),
+
+    %% :// がない
+    ?assertEqual(invalid_value, validate_http_uri(<<"telnet:www.example.com">>)),
+
+    %% ホストが空文字
+    ?assertEqual(invalid_value, validate_http_uri(<<"http://">>)),
+
+    %% いきなり query
+    ?assertEqual(invalid_value, validate_http_uri(<<"http://?egg=ham">>)),
     ok.
 
 
