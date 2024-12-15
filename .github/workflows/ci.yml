@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     container:
-      image: shiguredo/erlang:otp-27.1.2-openssl-3.4.0-ubuntu-24.04-x86_64
+      image: shiguredo/erlang:otp-27.2-openssl-3.4.0-ubuntu-24.04-x86_64
     steps:
       - uses: actions/checkout@v4
       - run: make compile dialyzer test

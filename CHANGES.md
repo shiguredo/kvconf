@@ -11,6 +11,11 @@
 
 ## develop
 
+- [UPDATE] GitHub Actions の docker の OTP を 27.2 に上げる
+  - @voluntas
+- [CHANGE] rebar3 の minimum_otp_vsn を 27.2 にする
+  - @voluntas
+
 ## 2024.3.1
 
 - [FIX] `#kvc_http_uri{}` のバリデーションを修正する
