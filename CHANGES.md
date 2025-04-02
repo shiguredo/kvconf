@@ -11,9 +11,16 @@
 
 ## develop
 
-- [UPDATE] GitHub Actions の docker の OTP を 27.2 に上げる
+- [CHANGE] GitHub Actions の docker の OTP を 28.0-rc2 / OpenSSL 3.5.0-beta1 に上げる
   - @voluntas
-- [CHANGE] rebar3 の minimum_otp_vsn を 27.2 にする
+- [CHANGE] rebar3 の minimum_otp_vsn を 28.0 にする
+  - @voluntas
+
+### misc
+
+- [CHANGE] GitHub Actions の docker image を ghcr.io に変更する
+  - @voluntas
+- [ADD] [ELP](https://github.com/whatsapp/erlang-language-platform) 向けの [eqwalizer_support](https://github.com/whatsapp/eqwalizer) を deps に追加する
   - @voluntas
 
 ## 2024.3.1
