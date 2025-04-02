@@ -9,16 +9,15 @@
 - INI 形式のセクション機能は利用できない
 - 設定ファイルに対するバリデーションを Erlang のレコードを利用して定義することができるため Dialyzer の恩恵を受けることができます
 
-
 ## rebar.conf
 
 ```erlang
-{deps, [{kvconf, "2024.2.1"}]}.
+{deps, [{kvconf, "2024.3.1"}]}.
 ```
 
 ## 設定ファイル例
 
-```
+```text
 etc/app.conf
 ```
 
@@ -41,8 +40,8 @@ key = value
 
 ## ライセンス
 
-```
-Copyright 2019-2024, Shiguredo Inc.
+```text
+Copyright 2019-2025, Shiguredo Inc.
 Copyright 2019-2021, Shunichi Shinohara (Original Author)
 
 Licensed under the Apache License, Version 2.0 (the "License");
