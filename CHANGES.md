@@ -13,9 +13,9 @@
 
 ### misc
 
-- [CHANGE] GitHub Actions のコンテナイメージを OTP を 28.0-rc4 / OpenSSL 3.5.0 に上げる
+- [CHANGE] GitHub Actions のコンテナイメージを OTP を 28.1 / OpenSSL 3.6.0 に上げる
   - @voluntas
-- [CHANGE] rebar3 の minimum_otp_vsn を 28.0 にする
+- [CHANGE] rebar3 の minimum_otp_vsn を 28.1 にする
   - @voluntas
 - [CHANGE] GitHub Actions の docker image を ghcr.io に変更する
   - @voluntas
