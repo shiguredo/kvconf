@@ -47,23 +47,16 @@ initialize(KvcList, Binary) ->
           {ok, [binary()], [{atom(), term()}]} |
           {error, term()}.
 initialize(KvcList, Binary, Options) ->
-    case validate_options(Options) of
-        ok ->
-            case parse(Binary) of
-                {ok, Configurations0, LastLineNumber} ->
-                    Configurations = maybe_env_overrides(Configurations0, KvcList, Options),
-                    case kvconf_validate:validate(LastLineNumber, Configurations, KvcList) of
-                        ok ->
-                            UnknownKeys = unknown_keys(Configurations, KvcList),
-                            %% undoc_ で設定された値一覧を返す
-                            UndocKvList = undoc_kv_list(Configurations, KvcList),
-                            {ok, UnknownKeys, UndocKvList};
-                        {error, Reason} ->
-                            {error, Reason}
-                    end;
-                {error, Reason} ->
-                    {error, Reason}
-            end;
+    maybe
+        ok ?= validate_options(Options),
+        {ok, Configurations0, LastLineNumber} ?= parse(Binary),
+        Configurations = maybe_env_overrides(Configurations0, KvcList, Options),
+        ok ?= kvconf_validate:validate(LastLineNumber, Configurations, KvcList),
+        UnknownKeys = unknown_keys(Configurations, KvcList),
+        %% undoc_ で設定された値一覧を返す
+        UndocKvList = undoc_kv_list(Configurations, KvcList),
+        {ok, UnknownKeys, UndocKvList}
+    else
         {error, Reason} ->
             {error, Reason}
     end.
