@@ -90,16 +90,16 @@ maybe_env_overrides0(Configurations, [#kvc{key = Key} | Rest], Prefix) ->
 
 
 %% キーから環境変数名への変換
--spec key_to_env_name(atom(), binary() | undefined) -> unicode:chardata().
+-spec key_to_env_name(atom(), binary() | undefined) -> string().
 key_to_env_name(Key, undefined) ->
     %% Prefix なし
     KeyStr = atom_to_list(Key),
-    string:uppercase(KeyStr);
+    unicode:characters_to_list(string:uppercase(KeyStr));
 key_to_env_name(Key, Prefix) ->
     %% Prefix あり
-    PrefixStr = string:uppercase(binary_to_list(Prefix)),
+    PrefixStr = unicode:characters_to_list(string:uppercase(binary_to_list(Prefix))),
     KeyStr = atom_to_list(Key),
-    UpperKeyStr = string:uppercase(KeyStr),
+    UpperKeyStr = unicode:characters_to_list(string:uppercase(KeyStr)),
     PrefixStr ++ "_" ++ UpperKeyStr.
 
 
