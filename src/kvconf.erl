@@ -93,14 +93,14 @@ maybe_env_overrides0(Configurations, [#kvc{key = Key} | Rest], Prefix) ->
 -spec key_to_env_name(atom(), binary() | undefined) -> string().
 key_to_env_name(Key, undefined) ->
     %% Prefix なし
-    KeyStr = atom_to_list(Key),
-    unicode:characters_to_list(string:uppercase(KeyStr));
+    KeyStr = atom_to_binary(Key),
+    binary_to_list(string:uppercase(KeyStr));
 key_to_env_name(Key, Prefix) ->
     %% Prefix あり
-    PrefixStr = unicode:characters_to_list(string:uppercase(binary_to_list(Prefix))),
-    KeyStr = atom_to_list(Key),
-    UpperKeyStr = unicode:characters_to_list(string:uppercase(KeyStr)),
-    PrefixStr ++ "_" ++ UpperKeyStr.
+    PrefixStr = string:uppercase(Prefix),
+    KeyStr = atom_to_binary(Key),
+    UpperKeyStr = string:uppercase(KeyStr),
+    binary_to_list(<<PrefixStr/binary, "_", UpperKeyStr/binary>>).
 
 
 %% XXX(v): 効率死ぬほど良くない
