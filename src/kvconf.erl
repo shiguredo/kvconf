@@ -47,21 +47,44 @@ initialize(KvcList, Binary) ->
           {ok, [binary()], [{atom(), term()}]} |
           {error, term()}.
 initialize(KvcList, Binary, Options) ->
-    case parse(Binary) of
-        {ok, Configurations0, LastLineNumber} ->
-            Configurations = maybe_env_overrides(Configurations0, KvcList, Options),
-            case kvconf_validate:validate(LastLineNumber, Configurations, KvcList) of
-                ok ->
-                    UnknownKeys = unknown_keys(Configurations, KvcList),
-                    %% undoc_ で設定された値一覧を返す
-                    UndocKvList = undoc_kv_list(Configurations, KvcList),
-                    {ok, UnknownKeys, UndocKvList};
+    case validate_options(Options) of
+        ok ->
+            case parse(Binary) of
+                {ok, Configurations0, LastLineNumber} ->
+                    Configurations = maybe_env_overrides(Configurations0, KvcList, Options),
+                    case kvconf_validate:validate(LastLineNumber, Configurations, KvcList) of
+                        ok ->
+                            UnknownKeys = unknown_keys(Configurations, KvcList),
+                            %% undoc_ で設定された値一覧を返す
+                            UndocKvList = undoc_kv_list(Configurations, KvcList),
+                            {ok, UnknownKeys, UndocKvList};
+                        {error, Reason} ->
+                            {error, Reason}
+                    end;
                 {error, Reason} ->
                     {error, Reason}
             end;
         {error, Reason} ->
             {error, Reason}
     end.
+
+
+%% Options のバリデーション
+-spec validate_options(map()) -> ok | {error, term()}.
+validate_options(Options) when map_size(Options) =:= 0 ->
+    ok;
+validate_options(#{env_prefix := Value} = Options0) ->
+    case is_binary(Value) of
+        %% 空バイナリは許容しない
+        true when byte_size(Value) > 0 ->
+            Options = maps:remove(env_prefix, Options0),
+            validate_options(Options);
+        _ ->
+            {error, {invalid_option_value, env_prefix, Value}}
+    end;
+validate_options(Options) ->
+    %% 見知らぬキー一覧はここにくる
+    {error, {unknown_option_keys, maps:keys(Options)}}.
 
 
 %% 環境変数が存在する場合は設定を上書き
@@ -75,6 +98,7 @@ maybe_env_overrides0(Configurations, [], _Prefix) ->
     Configurations;
 maybe_env_overrides0(Configurations, [#kvc{key = Key} | Rest], Prefix) ->
     EnvName = key_to_env_name(Key, Prefix),
+    %% os:getenv/1 が string のみを要求している
     case os:getenv(EnvName) of
         false ->
             maybe_env_overrides0(Configurations, Rest, Prefix);
@@ -94,12 +118,14 @@ maybe_env_overrides0(Configurations, [#kvc{key = Key} | Rest], Prefix) ->
 key_to_env_name(Key, undefined) ->
     %% Prefix なし
     KeyStr = atom_to_binary(Key),
+    %% os:getenv/1 が string のみを要求しているので変換
     binary_to_list(string:uppercase(KeyStr));
 key_to_env_name(Key, Prefix) ->
     %% Prefix あり
     PrefixStr = string:uppercase(Prefix),
     KeyStr = atom_to_binary(Key),
     UpperKeyStr = string:uppercase(KeyStr),
+    %% os:getenv/1 が string のみを要求している
     binary_to_list(<<PrefixStr/binary, "_", UpperKeyStr/binary>>).
 
 
@@ -229,6 +255,32 @@ undoc_kv_list_test() ->
                                   type = #kvc_integer{min = 10, max = 99},
                                   required = false
                                  }])),
+    ok.
+
+
+validate_options_test() ->
+    %% 空の Options
+    ?assertEqual(ok, validate_options(#{})),
+
+    %% env_prefix が binary の場合
+    ?assertEqual(ok, validate_options(#{env_prefix => <<"TEST">>})),
+
+    %% env_prefix が空バイナリの場合
+    ?assertEqual({error, {invalid_option_value, env_prefix, <<>>}},
+                 validate_options(#{env_prefix => <<>>})),
+
+    %% env_prefix が binary でない場合
+    ?assertEqual({error, {invalid_option_value, env_prefix, "TEST"}},
+                 validate_options(#{env_prefix => "TEST"})),
+    ?assertEqual({error, {invalid_option_value, env_prefix, 123}},
+                 validate_options(#{env_prefix => 123})),
+
+    %% 不正なキーが含まれる場合
+    ?assertEqual({error, {unknown_option_keys, [invalid_key]}},
+                 validate_options(#{invalid_key => <<"value">>})),
+    ?assertEqual({error, {unknown_option_keys, [spam, egg]}},
+                 validate_options(#{env_prefix => <<"TEST">>, spam => 1, egg => 2})),
+
     ok.
 
 
