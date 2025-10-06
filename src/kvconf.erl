@@ -1,6 +1,6 @@
 -module(kvconf).
 
--export([initialize/2]).
+-export([initialize/2, initialize/3]).
 -export([set_value/2,
          unset_value/1,
          get_value/1]).
@@ -40,8 +40,16 @@
           {ok, [binary()], [{atom(), term()}]} |
           {error, term()}.
 initialize(KvcList, Binary) ->
+    initialize(KvcList, Binary, #{}).
+
+
+-spec initialize([#kvc{}], binary(), map()) ->
+          {ok, [binary()], [{atom(), term()}]} |
+          {error, term()}.
+initialize(KvcList, Binary, Options) ->
     case parse(Binary) of
-        {ok, Configurations, LastLineNumber} ->
+        {ok, Configurations0, LastLineNumber} ->
+            Configurations = maybe_env_overrides(Configurations0, KvcList, Options),
             case kvconf_validate:validate(LastLineNumber, Configurations, KvcList) of
                 ok ->
                     UnknownKeys = unknown_keys(Configurations, KvcList),
@@ -54,6 +62,45 @@ initialize(KvcList, Binary) ->
         {error, Reason} ->
             {error, Reason}
     end.
+
+
+%% 環境変数が存在する場合は設定を上書き
+-spec maybe_env_overrides(map(), [#kvc{}], map()) -> map().
+maybe_env_overrides(Configurations, KvcList, Options) ->
+    Prefix = maps:get(env_prefix, Options, undefined),
+    maybe_env_overrides0(Configurations, KvcList, Prefix).
+
+
+maybe_env_overrides0(Configurations, [], _Prefix) ->
+    Configurations;
+maybe_env_overrides0(Configurations, [#kvc{key = Key} | Rest], Prefix) ->
+    EnvName = key_to_env_name(Key, Prefix),
+    case os:getenv(EnvName) of
+        false ->
+            maybe_env_overrides0(Configurations, Rest, Prefix);
+        EnvValue ->
+            %% 環境変数の値で上書き
+            %% Line には環境変数名を、LineNumber には 0 を設定
+            BinKey = atom_to_binary(Key, utf8),
+            BinValue = list_to_binary(EnvValue),
+            Line = list_to_binary("ENV:" ++ EnvName),
+            NewConfigurations = Configurations#{BinKey => {BinValue, Line, 0}},
+            maybe_env_overrides0(NewConfigurations, Rest, Prefix)
+    end.
+
+
+%% キーから環境変数名への変換
+-spec key_to_env_name(atom(), binary() | undefined) -> unicode:chardata().
+key_to_env_name(Key, undefined) ->
+    %% Prefix なし
+    KeyStr = atom_to_list(Key),
+    string:uppercase(KeyStr);
+key_to_env_name(Key, Prefix) ->
+    %% Prefix あり
+    PrefixStr = string:uppercase(binary_to_list(Prefix)),
+    KeyStr = atom_to_list(Key),
+    UpperKeyStr = string:uppercase(KeyStr),
+    PrefixStr ++ "_" ++ UpperKeyStr.
 
 
 %% XXX(v): 効率死ぬほど良くない
@@ -116,7 +163,7 @@ parse(Binary) ->
 -spec parse_lines(map(), [binary()], integer()) ->
           {ok, map(), integer()} |
           {error,
-           {duplicate_key, binary(), integer()} |
+           {duplicated_key, binary(), integer()} |
            {invalid_line_format, binary(), integer()}}.
 parse_lines(Configurations, [], LastLineNumber) ->
     {ok, Configurations, LastLineNumber};

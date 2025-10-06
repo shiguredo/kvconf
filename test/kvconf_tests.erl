@@ -1,9 +1,10 @@
 -module(kvconf_tests).
 
 -include("kvconf.hrl").
+
 -include_lib("eunit/include/eunit.hrl").
 
--import(kvconf, [initialize/2, get_value/1, unset_value/1]).
+-import(kvconf, [initialize/2, initialize/3, get_value/1, unset_value/1]).
 
 
 smoke_test() ->
@@ -180,4 +181,72 @@ missing_key_test() ->
                                                           type = #kvc_boolean{}
                                                          }],
                                                        <<"\n", Line/binary, "\n">>),
+    ok.
+
+
+env_override_no_prefix_test() ->
+    %% Prefix なしで環境変数から読み込み
+    os:putenv("MY_INTEGER", "77"),
+    os:putenv("MY_STRING", "hello from env"),
+    {ok, [], []} = initialize([#kvc{
+                                 key = my_integer,
+                                 type = #kvc_integer{min = 0, max = 100},
+                                 required = true
+                                },
+                               #kvc{
+                                 key = my_string,
+                                 type = #kvc_string{},
+                                 required = true
+                                }],
+                              <<>>,
+                              #{}),
+    ?assertEqual(77, get_value(my_integer)),
+    ?assertEqual(<<"hello from env">>, get_value(my_string)),
+    ok = unset_value(my_integer),
+    ok = unset_value(my_string),
+    os:unsetenv("MY_INTEGER"),
+    os:unsetenv("MY_STRING"),
+    ok.
+
+
+env_override_with_prefix_test() ->
+    %% Prefix ありで環境変数から読み込み
+    os:putenv("MYAPP_PORT", "8080"),
+    os:putenv("MYAPP_ENABLED", "true"),
+    {ok, [], []} = initialize([#kvc{
+                                 key = port,
+                                 type = #kvc_port_number{},
+                                 required = true
+                                },
+                               #kvc{
+                                 key = enabled,
+                                 type = #kvc_boolean{},
+                                 required = true
+                                }],
+                              <<>>,
+                              #{env_prefix => <<"myapp">>}),
+    ?assertEqual(8080, get_value(port)),
+    ?assertEqual(true, get_value(enabled)),
+    ok = unset_value(port),
+    ok = unset_value(enabled),
+    os:unsetenv("MYAPP_PORT"),
+    os:unsetenv("MYAPP_ENABLED"),
+    ok.
+
+
+env_override_priority_test() ->
+    %% INI ファイルと環境変数の両方がある場合、環境変数が優先される
+    os:putenv("PRIORITY_TEST", "100"),
+    Config = <<"priority_test = 50">>,
+    {ok, [], []} = initialize([#kvc{
+                                 key = priority_test,
+                                 type = #kvc_integer{min = 0, max = 200},
+                                 required = true
+                                }],
+                              Config,
+                              #{}),
+    %% 環境変数の値 100 が優先される（INI の 50 ではない）
+    ?assertEqual(100, get_value(priority_test)),
+    ok = unset_value(priority_test),
+    os:unsetenv("PRIORITY_TEST"),
     ok.

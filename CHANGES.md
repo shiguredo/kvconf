@@ -11,6 +11,12 @@
 
 ## develop
 
+- [ADD] kvconf:initialize/3 を追加し、環境変数による設定の上書きをサポート
+  - 環境変数が設定されている場合、INI ファイルの値より優先される
+  - Options マップで `env_prefix => <<"spam">>` のようにプレフィックスを指定可能
+  - INI キー `abc_efg` は環境変数 `ABC_EFG` (prefix なし) または `SPAM_ABC_EFG` (prefix あり) で上書き可能
+  - @voluntas
+
 ### misc
 
 - [CHANGE] GitHub Actions のコンテナイメージを OTP を 28.0-rc4 / OpenSSL 3.5.0 に上げる
