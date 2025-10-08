@@ -80,11 +80,16 @@ validate_options(Options) ->
     {error, {unknown_option_keys, maps:keys(Options)}}.
 
 
-%% 環境変数が存在する場合は設定を上書き
 -spec maybe_env_overrides(map(), [#kvc{}], map()) -> map().
 maybe_env_overrides(Configurations, KvcList, Options) ->
-    Prefix = maps:get(env_prefix, Options, undefined),
-    maybe_env_overrides0(Configurations, KvcList, Prefix).
+    case maps:get(env_prefix, Options, undefined) of
+        undefined ->
+            %% prefix が無い場合は環境変数による上書きを行わない
+            Configurations;
+        Prefix ->
+            %% 環境変数が存在する場合は設定を上書き
+            maybe_env_overrides0(Configurations, KvcList, Prefix)
+    end.
 
 
 maybe_env_overrides0(Configurations, [], _Prefix) ->
