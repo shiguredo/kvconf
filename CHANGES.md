@@ -11,11 +11,17 @@
 
 ## develop
 
+## 2025.1.0
+
+**リリース日**: 2025-10-08
+
 - [ADD] kvconf:initialize/3 を追加し、環境変数による設定の上書きをサポート
   - Options マップでプレフィックスを指定可能
     - `env_prefix => <<"SPAM">>`
   - `env_prefix` が指定されている場合は環境変数による設定項目の上書きが有効になる
   - `env_prefix` が `<<"SPAM">>` の場合、設定項目 `abc_efg` は環境変数 `SPAM_ABC_EFG` で上書できる
+  - @voluntas
+- [UPDATE] rebar3 を 3.25.1 に上げる
   - @voluntas
 
 ### misc
@@ -27,6 +33,7 @@
 - [CHANGE] GitHub Actions の docker image を ghcr.io に変更する
   - @voluntas
 - [ADD] [ELP](https://github.com/whatsapp/erlang-language-platform) 向けの [eqwalizer_support](https://github.com/whatsapp/eqwalizer) を deps に追加する
+  - 一時的にコメントアウト
   - @voluntas
 
 ## 2024.3.1
