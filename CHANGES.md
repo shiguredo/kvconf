@@ -11,6 +11,10 @@
 
 ## develop
 
+## 2025.1.0
+
+**リリース日**: 2025-10-08
+
 - [ADD] kvconf:initialize/3 を追加し、環境変数による設定の上書きをサポート
   - Options マップでプレフィックスを指定可能
     - `env_prefix => <<"SPAM">>`
@@ -27,6 +31,7 @@
 - [CHANGE] GitHub Actions の docker image を ghcr.io に変更する
   - @voluntas
 - [ADD] [ELP](https://github.com/whatsapp/erlang-language-platform) 向けの [eqwalizer_support](https://github.com/whatsapp/eqwalizer) を deps に追加する
+  - 一時的にコメントアウト
   - @voluntas
 
 ## 2024.3.1
