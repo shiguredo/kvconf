@@ -41,13 +41,15 @@ key = value
 
 ## 環境変数による上書き
 
+オプションで `env_prefix` が指定されている場合、
 環境変数が設定されている場合、INI ファイルの値より優先されます。
 
 ### 変換ルール
 
-- INI キー `abc_efg` → 環境変数 `ABC_EFG` (prefix なし)
-- INI キー `abc_efg` → 環境変数 `MYAPP_ABC_EFG` (prefix = `<<"myapp">>`)
-- アンダースコアは維持され、全体が大文字化されます
+- env_prefix に `<<"SPAM">>` を指定
+  - これで環境変数による設定の上書きが有効になる
+- conf のキーが `abc_efg` の場合は環境変数 `SPAM_ABC_EFG` で上書きできる
+- アンダースコアは維持され、全体が大文字になる
 
 ### 使用例
 
@@ -55,28 +57,13 @@ key = value
 %% INI ファイル (app.conf)
 %% port = 3000
 
-%% 環境変数 PORT=8080 を設定
-os:putenv("PORT", "8080"),
+%% 環境変数 SPAM_PORT=8080 を設定
+os:putenv("SPAM_PORT", "8080"),
 
 %% 環境変数の値 8080 が優先される
 {ok, _UnknownKeys, _UndocKvList} = kvconf:initialize([
     #kvc{key = port, type = #kvc_port_number{}, required = true}
-], Binary),
-8080 = kvconf:get_value(port).
-```
-
-### プレフィックス付き環境変数
-
-プレフィックスを指定したい場合は `kvconf:initialize/3` を使用します。
-
-```erlang
-%% 環境変数 MYAPP_PORT=8080 を設定
-os:putenv("MYAPP_PORT", "8080"),
-
-{ok, _UnknownKeys, _UndocKvList} = kvconf:initialize([
-    #kvc{key = port, type = #kvc_port_number{}, required = true}
-], Binary, #{env_prefix => <<"myapp">>}),
-
+], Binary, #{env_preifx => <<"SPAM">>}),
 8080 = kvconf:get_value(port).
 ```
 
