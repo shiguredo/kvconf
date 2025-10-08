@@ -12,9 +12,10 @@
 ## develop
 
 - [ADD] kvconf:initialize/3 を追加し、環境変数による設定の上書きをサポート
-  - 環境変数が設定されている場合、INI ファイルの値より優先される
-  - Options マップで `env_prefix => <<"spam">>` のようにプレフィックスを指定可能
-  - INI キー `abc_efg` は環境変数 `ABC_EFG` (prefix なし) または `SPAM_ABC_EFG` (prefix あり) で上書き可能
+  - Options マップでプレフィックスを指定可能
+    - `env_prefix => <<"SPAM">>`
+  - `env_prefix` が指定されている場合は環境変数による設定項目の上書きが有効になる
+  - `env_prefix` が `<<"SPAM">>` の場合、設定項目 `abc_efg` は環境変数 `SPAM_ABC_EFG` で上書できる
   - @voluntas
 
 ### misc
