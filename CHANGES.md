@@ -21,6 +21,8 @@
   - `env_prefix` が指定されている場合は環境変数による設定項目の上書きが有効になる
   - `env_prefix` が `<<"SPAM">>` の場合、設定項目 `abc_efg` は環境変数 `SPAM_ABC_EFG` で上書できる
   - @voluntas
+- [UPDATE] rebar3 を 3.25.1 に上げる
+  - @voluntas
 
 ### misc
 
