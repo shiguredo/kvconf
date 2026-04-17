@@ -11,6 +11,15 @@
 
 ## develop
 
+### misc
+
+- [CHANGE] GitHub Actions のコンテナイメージを OTP 28.4.2 / OpenSSL 3.6.2 / Ubuntu 26.04 に上げる
+  - @voluntas
+- [CHANGE] Slack 通知を rtCamp/action-slack-notify から shiguredo/github-actions/.github/actions/slack-notify に切り替える
+  - 通知を別ジョブに分離し `notify_mode` のデフォルト (`failure_and_fixed`) を利用する
+  - Fixed 判定のため `actions: read` / `contents: read` 権限と `concurrency` 設定を追加する
+  - @voluntas
+
 ## 2025.1.0
 
 **リリース日**: 2025-10-08
