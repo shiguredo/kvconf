@@ -11,17 +11,46 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  efmt:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      # gh release download で使用する
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      EFMT_VERSION: "0.21.0"
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      # "Install efmt" の中でパスを追加しても反映されなかったのでステップを分ける
+      - name: Add path
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install efmt
+        run: |
+          gh release download "${EFMT_VERSION}" \
+            -R sile/efmt \
+            -p "efmt-${EFMT_VERSION}.x86_64-unknown-linux-musl" \
+            -D .
+          chmod 755 "efmt-${EFMT_VERSION}.x86_64-unknown-linux-musl"
+          mkdir -p "$HOME/.local/bin"
+          mv "efmt-${EFMT_VERSION}.x86_64-unknown-linux-musl" "$HOME/.local/bin/efmt"
+
+      - name: Verify efmt
+        run: efmt --version
+
+      - run: make efmt-check
+
   ci:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     container:
       image: ghcr.io/shiguredo/erlang:otp-28.4.2-openssl-3.6.2-ubuntu-26.04-x86_64
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - run: make compile dialyzer test
 
   notify:
-    needs: [ci]
+    needs: [efmt, ci]
     if: always()
     runs-on: ubuntu-slim
     permissions:

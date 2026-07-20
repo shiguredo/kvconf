@@ -1,4 +1,4 @@
-.PHONY: clean upgrade compile test distclean
+.PHONY: clean upgrade compile test dialyzer efmt-check distclean publish
 
 all: clean upgrade compile dialyzer test
 
@@ -18,6 +18,9 @@ test:
 
 dialyzer:
 	@./rebar3 dialyzer
+
+efmt-check:
+	@RUST_LOG=warn efmt --check --parallel --check-line-length 120
 
 distclean:
 	@./rebar3 clean --all

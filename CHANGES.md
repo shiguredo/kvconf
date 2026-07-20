@@ -13,6 +13,8 @@
 
 ### misc
 
+- [CHANGE] rebar3_efmt / rebar3_lint / elvis を削除し、スタンドアロン efmt による `make efmt-check` と CI の `efmt` ジョブに切り替える
+  - @voluntas
 - [CHANGE] GitHub Actions のコンテナイメージを OTP 28.4.2 / OpenSSL 3.6.2 / Ubuntu 26.04 に上げる
   - @voluntas
 - [CHANGE] Slack 通知を rtCamp/action-slack-notify から shiguredo/github-actions/.github/actions/slack-notify に切り替える
