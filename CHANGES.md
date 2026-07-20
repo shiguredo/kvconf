@@ -13,6 +13,8 @@
 
 ### misc
 
+- [CHANGE] GitHub Actions のコンテナイメージを OTP 29.0.2 / AWS-LC 5.2.0 / Ubuntu 26.04 に上げ、`minimum_otp_vsn` を 29.0 にする
+  - @voluntas
 - [CHANGE] rebar3_efmt / rebar3_lint / elvis を削除し、スタンドアロン efmt による `make efmt-check` と CI の `efmt` ジョブに切り替える
   - @voluntas
 - [CHANGE] GitHub Actions のコンテナイメージを OTP 28.4.2 / OpenSSL 3.6.2 / Ubuntu 26.04 に上げる
