@@ -23,6 +23,8 @@
   - 通知を別ジョブに分離し `notify_mode` のデフォルト (`failure_and_fixed`) を利用する
   - Fixed 判定のため `actions: read` / `contents: read` 権限と `concurrency` 設定を追加する
   - @voluntas
+- [ADD] スタンドアロン elint による `make elint-check` と CI の `elint` ジョブを追加する
+  - @voluntas
 
 ## 2025.1.0
 

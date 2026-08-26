@@ -40,6 +40,31 @@ jobs:
 
       - run: make efmt-check
 
+  # プリビルドバイナリが無いため cargo install で導入する
+  elint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      ELINT_VERSION: "0.0.2"
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Add path
+        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install Rust toolchain
+        run: |
+          rustup update stable
+          rustup default stable
+
+      - name: Install elint
+        run: cargo install elint --version "${ELINT_VERSION}" --locked
+
+      - name: Verify elint
+        run: elint --version
+
+      - run: make elint-check
+
   ci:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -50,7 +75,7 @@ jobs:
       - run: make compile dialyzer test
 
   notify:
-    needs: [efmt, ci]
+    needs: [efmt, elint, ci]
     if: always()
     runs-on: ubuntu-slim
     permissions:

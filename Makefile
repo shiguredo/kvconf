@@ -1,4 +1,4 @@
-.PHONY: clean upgrade compile test dialyzer efmt-check distclean publish
+.PHONY: clean upgrade compile test dialyzer efmt-check elint-check distclean publish
 
 all: clean upgrade compile dialyzer test
 
@@ -21,6 +21,10 @@ dialyzer:
 
 efmt-check:
 	@RUST_LOG=warn efmt --check --parallel --check-line-length 120
+
+# デフォルトの tests/ ではなく test/ を明示する
+elint-check:
+	@elint src/ test/
 
 distclean:
 	@./rebar3 clean --all
