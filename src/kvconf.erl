@@ -197,21 +197,26 @@ parse_lines(Configurations, [Line | Lines], LineNumber) ->
         {match, _} ->
             parse_lines(Configurations, Lines, LineNumber + 1);
         nomatch ->
-            %% TODO: ここは定数でもいいかもしれない
-            case re:run(Line, <<"^([^=]*)=(.*)$">>, [{capture, all, binary}]) of
-                nomatch ->
-                    {error, {invalid_line_format, Line, LineNumber}};
-                {match, [_, RawKey, RawValue]} ->
-                    Key = string:trim(RawKey),
-                    Value = string:trim(RawValue),
-                    case maps:is_key(Key, Configurations) of
-                        true ->
-                            {error, {duplicated_key, Key, LineNumber}};
-                        false ->
-                            parse_lines(Configurations#{Key => {Value, Line, LineNumber}},
-                                        Lines,
-                                        LineNumber + 1)
-                    end
+            parse_kv_line(Configurations, Line, Lines, LineNumber)
+    end.
+
+
+%% key=value 行をパースし、重複キーを検出する
+parse_kv_line(Configurations, Line, Lines, LineNumber) ->
+    %% TODO: ここは定数でもいいかもしれない
+    case re:run(Line, <<"^([^=]*)=(.*)$">>, [{capture, all, binary}]) of
+        nomatch ->
+            {error, {invalid_line_format, Line, LineNumber}};
+        {match, [_, RawKey, RawValue]} ->
+            Key = string:trim(RawKey),
+            Value = string:trim(RawValue),
+            case maps:is_key(Key, Configurations) of
+                true ->
+                    {error, {duplicated_key, Key, LineNumber}};
+                false ->
+                    parse_lines(Configurations#{Key => {Value, Line, LineNumber}},
+                                Lines,
+                                LineNumber + 1)
             end
     end.
 

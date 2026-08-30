@@ -15,7 +15,8 @@
 
 - [CHANGE] GitHub Actions のコンテナイメージを OTP 29.0.2 / AWS-LC 5.2.0 / Ubuntu 26.04 に上げ、`minimum_otp_vsn` を 29.0 にする
   - @voluntas
-- [CHANGE] rebar3_efmt / rebar3_lint / elvis を削除し、スタンドアロン efmt による `make efmt-check` と CI の `efmt` ジョブに切り替える
+- [CHANGE] rebar3_efmt / rebar3_lint / elvis を削除し、prek (`prek.toml`) 経由の efmt / elint (`shiguredo/erlang-pre-commit`) に切り替える
+  - CI は `j178/prek-action` で `prek.toml` のフックを実行する
   - @voluntas
 - [CHANGE] GitHub Actions のコンテナイメージを OTP 28.4.2 / OpenSSL 3.6.2 / Ubuntu 26.04 に上げる
   - @voluntas
