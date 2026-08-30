@@ -11,59 +11,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  efmt:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    env:
-      # gh release download で使用する
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      EFMT_VERSION: "0.21.0"
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-
-      # "Install efmt" の中でパスを追加しても反映されなかったのでステップを分ける
-      - name: Add path
-        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Install efmt
-        run: |
-          gh release download "${EFMT_VERSION}" \
-            -R sile/efmt \
-            -p "efmt-${EFMT_VERSION}.x86_64-unknown-linux-musl" \
-            -D .
-          chmod 755 "efmt-${EFMT_VERSION}.x86_64-unknown-linux-musl"
-          mkdir -p "$HOME/.local/bin"
-          mv "efmt-${EFMT_VERSION}.x86_64-unknown-linux-musl" "$HOME/.local/bin/efmt"
-
-      - name: Verify efmt
-        run: efmt --version
-
-      - run: make efmt-check
-
-  # プリビルドバイナリが無いため cargo install で導入する
-  elint:
-    runs-on: ubuntu-24.04
+  # prek.toml のフックをすべて実行する (efmt / efmt-check / elint など)
+  check:
+    runs-on: ubuntu-slim
+    # prek の hook 環境準備 (初回や cache miss) を見込んで余裕を持たせる
     timeout-minutes: 10
-    env:
-      ELINT_VERSION: "0.0.2"
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-
-      - name: Add path
-        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-      - name: Install Rust toolchain
-        run: |
-          rustup update stable
-          rustup default stable
-
-      - name: Install elint
-        run: cargo install elint --version "${ELINT_VERSION}" --locked
-
-      - name: Verify elint
-        run: elint --version
-
-      - run: make elint-check
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: j178/prek-action@4e14d07f9231acabce116ccfca13b13dd9755ece # v3.0.0
 
   ci:
     runs-on: ubuntu-latest
@@ -71,11 +26,11 @@ jobs:
     container:
       image: ghcr.io/shiguredo/erlang:otp-29.0.2-aws-lc-v5.2.0-ubuntu-26.04-x86_64
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: make compile dialyzer test
 
   notify:
-    needs: [efmt, elint, ci]
+    needs: [check, ci]
     if: always()
     runs-on: ubuntu-slim
     permissions:

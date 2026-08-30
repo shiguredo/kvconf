@@ -19,12 +19,12 @@ test:
 dialyzer:
 	@./rebar3 dialyzer
 
+# prek.toml 経由で efmt / elint を実行する
 efmt-check:
-	@RUST_LOG=warn efmt --check --parallel --check-line-length 120
+	@prek run efmt-check --all-files
 
-# デフォルトの tests/ ではなく test/ を明示する
 elint-check:
-	@elint src/ test/
+	@prek run elint --all-files
 
 distclean:
 	@./rebar3 clean --all
