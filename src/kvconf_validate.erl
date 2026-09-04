@@ -4,6 +4,9 @@
 
 -include("kvconf.hrl").
 
+%% 時間単位の候補 (kvconf.hrl の in_time_unit() と対応する)
+-define(IN_TIME_UNIT, [ms, s, min, h]).
+
 
 -spec validate(non_neg_integer(), COnfigurations :: map(), [#kvc{}]) ->
           ok |
@@ -353,9 +356,6 @@ validate_http_uri(Value) ->
         _ ->
             invalid_value
     end.
-
-
--define(IN_TIME_UNIT, [ms, s, min, h]).
 
 
 %% #kvc_interval{min = {10, ms} , max = {1, sec}, out_unit = millisecond}
