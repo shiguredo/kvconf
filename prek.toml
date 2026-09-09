@@ -28,7 +28,7 @@ hooks = [
 # priority が小さいほど先に実行される。同じ priority なら並列実行される
 [[repos]]
 repo = "https://github.com/shiguredo/erlang-pre-commit"
-rev = "2026.3.0"
+rev = "2026.3.1"
 hooks = [
   # efmt -w: フォーマッタ (ファイルを書き換える)
   { id = "efmt", args = ["--parallel"], priority = 0 },
