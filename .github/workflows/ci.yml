@@ -21,8 +21,8 @@ jobs:
       - uses: j178/prek-action@4e14d07f9231acabce116ccfca13b13dd9755ece # v3.0.0
 
   ci:
-    # ubuntu-slim は 1 vCPU / 15 分の実行制限がある。setup-erlang が配置する
-    # dialyzer のベース PLT を使った incremental 解析で時間内に収める
+    # ubuntu-slim は 1 vCPU / 15 分の実行制限がある。dialyzer は project PLT を
+    # キャッシュして 2 回目以降を差分解析だけにして時間内に収める
     runs-on: ubuntu-slim
     timeout-minutes: 15
     steps:
@@ -31,9 +31,19 @@ jobs:
       # ビルド済みの Erlang/OTP 29.0.6 + AWS-LC v5.8.0 を使う
       # (rebar.config の minimum_otp_vsn は 29.0)
       - uses: shiguredo/setup-erlang@main
+        id: erlang
         with:
           otp-version: "29.0.6"
           aws-lc-version: "v5.8.0"
+
+      # setup-erlang が配置するベース PLT は rebar.config の warnings 設定が一致
+      # しないと再利用されないため、project PLT を保存して差分解析だけにする。
+      # ソース変更は dialyzer がビームファイルの差分として検知して解析し直すので、
+      # キーには PLT の互換性を決める rebar.config / rebar.lock だけを含める
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: _build/default/rebar3_${{ steps.erlang.outputs.otp-version }}_iplt
+          key: dialyzer-plt-${{ runner.os }}-${{ runner.arch }}-${{ steps.erlang.outputs.otp-version }}-${{ hashFiles('rebar.config', 'rebar.lock') }}
 
       - run: make compile dialyzer test
 
