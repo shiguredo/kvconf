@@ -21,12 +21,20 @@ jobs:
       - uses: j178/prek-action@4e14d07f9231acabce116ccfca13b13dd9755ece # v3.0.0
 
   ci:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    container:
-      image: ghcr.io/shiguredo/erlang:otp-29.0.6-aws-lc-v5.8.0-ubuntu-26.04-x86_64
+    # ubuntu-slim は 1 vCPU / 15 分の実行制限がある。setup-erlang が配置する
+    # dialyzer のベース PLT を使った incremental 解析で時間内に収める
+    runs-on: ubuntu-slim
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # ビルド済みの Erlang/OTP 29.0.6 + AWS-LC v5.8.0 を使う
+      # (rebar.config の minimum_otp_vsn は 29.0)
+      - uses: shiguredo/setup-erlang@main
+        with:
+          otp-version: "29.0.6"
+          aws-lc-version: "v5.8.0"
+
       - run: make compile dialyzer test
 
   notify:
