@@ -21,11 +21,11 @@
 ## 設計方針
 
 - unknown_keys は KvcList のキーを atom_to_binary(Key, utf8) で binary 化したリストと Configurations のキー（binary）を比較する。未知キー検出が例外に依存せず、KvcList のキーはソースリテラルの atom であるため atom_to_binary(Key, utf8) は成功する
-- undoc_kv_list は Configurations の undoc_ キーを binary_to_existing_atom で既存 atom にのみ変換し、badarg（atom 未存在・不正 UTF-8）は try-catch で捕捉してスキップする（不正 UTF-8 の undoc_ キーはエラーにならず黙ってスキップされる。この扱いは 0001 の経路 6 の {error, {invalid_key_name, ...}} とは別の経路であり、0001 は unknown_keys 側の保護を担当する）。persistent_term に値がある undoc_ キーの atom は set_value 時に生成済みであるため binary_to_existing_atom は成功し、atom は新規生成されない。返り値 {atom(), term()} の契約を維持し、KvcList に無い undoc_ キーでも persistent_term に値があれば返す（現行どおり）。値の取得元の変更は 0012 に委ねる
+- undoc_kv_list は Configurations の undoc_ キーを binary_to_existing_atom で既存 atom にのみ変換し、badarg（atom 未存在・不正 UTF-8）は try-catch で捕捉してスキップする（不正 UTF-8 の undoc_ キーはエラーにならず黙ってスキップされる。この扱いは 0001 の経路 6 の {error, {invalid_key_name, ...}} とは別の経路であり、0001 は unknown_keys 側の保護を担当する）。persistent_term に値がある undoc_ キーの atom は set_value 時に生成済みであるため binary_to_existing_atom は成功し、atom は新規生成されない。返り値 {atom(), term()} の契約を維持する。KvcList に無い undoc_ キーを返すかどうかは 0012（値の取得元の変更）で確定する（0012 の方針は「Configurations に存在する undoc_ キーのみを返す」）
 - validate_interval の binary_to_existing_atom は変更対象外（閉じた集合の単位検証に try-catch と組み合わせて使う正しい実装であり、本 issue の修正対象は unknown_keys / undoc_kv_list のみ）
 
 ## 完了条件
 
 - 毎回異なる未知キーを含む設定で initialize を繰り返しても、erlang:system_info(atom_count) が増えない（回帰テストは initialize 実行前後の diff で検証し、テスト内で binary_to_atom 等による atom 新規生成を行わない）
-- unknown_keys / undoc_kv_list の返り値が現状と同等である（既存の unknown_keys_test / undoc_kv_list_test がそのまま通ること。undoc_kv_list は KvcList に無い undoc_ キーでも persistent_term に値があれば返す現行挙動を維持する）
+- unknown_keys がバイナリ比較で未知キーを検出し、既存の unknown_keys_test が通ること。undoc_kv_list が atom を新規生成しないこと（返すキー集合と undoc_kv_list_test の扱いは 0012 の設計方針に従う）
 - 回帰テストが追加されている
