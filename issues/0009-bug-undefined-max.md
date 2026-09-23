@@ -3,7 +3,7 @@
 - Created: 2026-07-31
 - Completed: YYYY-MM-DD
 - Branch: feature/fix-undefined-max
-- Polished: 2026-07-31
+- Polished: 2026-09-23
 
 ## 目的
 
@@ -19,7 +19,7 @@
 
 ## 設計方針
 
-- max = undefined は invalid_value にする（0001 の #kvc_interval の undefined 扱いと同じ実行時検証方式。KvcList 定義時検証は kvconf にその機構がなく、0001 の方針「KvcList のレコード定義は静的データ」とも不整合のため不採用）
+- max = undefined は invalid_value にする（0001 の #kvc_interval の min / max / out_time_unit の undefined を invalid_value にする方針と同じ実行時検証方式。KvcList の定義時検証は kvconf にその機構がないため採用しない）
 - validate_integer / validate_float は min / max が number であること（is_number）をガードで検査し、undefined 等の atom を排除する。#kvc_float の min / max に integer を指定する既存利用（smoke_test の #kvc_float{min = -10, max = 10} 等）と、#kvc_integer の min / max に float を指定する既存挙動を維持するため、型注釈どおりの is_float / is_integer 限定はしない
 - min 側は既に全拒否で挙動不変だが、max 側のガード追加と対称にするため同じ is_number ガードに含める
 - max = infinity は is_number ガードの適用除外で従来どおり許容する
@@ -33,3 +33,4 @@
 - #kvc_float の min / max に integer を指定しても従来どおり動作する（既存 smoke_test の回帰）
 - default 値の検証経路でも max = undefined が全許可にならない（default 値も validate_type で検証されるため）
 - 回帰テストが validate_integer_test に追加され、validate_float_test が新規作成されている（max = infinity / 範囲外のテストは 0014 が担い、undefined / atom のテストは本 issue が担う）
+- max を省略（undefined）した既存定義が実行時に invalid_value になる後方互換のない変更であるため、CHANGES.md の develop セクションに [CHANGE] として追記する（上限なしにしたい場合は max = infinity を指定する旨の移行方法も書く）
