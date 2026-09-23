@@ -3,7 +3,7 @@
 - Created: 2026-07-31
 - Completed: YYYY-MM-DD
 - Branch: feature/fix-interval-max-boundary
-- Polished: 2026-07-31
+- Polished: 2026-09-23
 
 ## 目的
 
@@ -30,4 +30,4 @@
 - 単位混在の max 境界の回帰テストが validate_interval_test に追加されている
   - 1000 ms / 1001 ms / 1999 ms / 2000 ms vs max = {1, s}（1000 ms は ok、1001 / 1999 / 2000 ms は invalid_value）
   - 1 s vs max = {999, ms}（invalid_value。max 側を ceil で変換する誤実装を検出する）
-  - min 側の 999 ms / 1000 ms / 1001 ms vs min = {1, s}（999 ms は invalid_value、1000 / 1001 ms は ok）
+  - min 側の 999 ms / 1000 ms / 1001 ms vs min = {1, s}, max = infinity（999 ms は invalid_value、1000 / 1001 ms は ok）
