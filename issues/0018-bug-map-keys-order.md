@@ -22,7 +22,7 @@
 
 - `validate_options/1` / `unknown_keys/2` / `undoc_kv_list/2` の返却値を `lists:sort/1` で決定的にする（`undoc_kv_list/2` のキーは一意なので `lists:sort/1` と `lists:keysort(1, ...)` は同じ結果になる）
 - テストは実装の保証（ソート順）を固定して検証する。既存の `validate_options_test` の期待値をソート後の値に更新し、`lists:sort/1` で緩めない
-- `issues/0001`（返り値の `{ok, ...}` 化） / `0012`（`undoc_kv_list` の値の取得元と `KvcList` の扱い） / `0022`（`undoc_kv_list/3` の `KvcList` 引数の削除）とは実装順に依存しない。ソートは外側のタプルではなく内側のリストに適用する
+- `issues/0001`（返り値の `{ok, ...}` 化） / `0012`（`undoc_kv_list` の値の取得元と `KvcList` の扱い） / `0022`（死にコードと不要な設定の削除。`undoc_kv_list/3` の `KvcList` 引数は 0012 が使用するため 0022 の削除対象ではない）とは実装順に依存しない。ソートは外側のタプルではなく内側のリストに適用する
 
 ## 完了条件
 
