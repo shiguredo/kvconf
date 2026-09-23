@@ -3,11 +3,11 @@
 - Created: 2026-07-31
 - Completed: YYYY-MM-DD
 - Branch: feature/fix-declare-public-key-app
-- Polished: 2026-07-31
+- Polished: 2026-09-23
 
 ## 目的
 
-kvconf_pkix が public_key を使用しているのに kvconf.app.src の applications に宣言されておらず、kvconf を deps に含むアプリの relx リリースに public_key が収集されず、pkix バリデーション実行時に undef 例外になる。依存を正しく宣言する。
+kvconf_pkix が public_key を使用しているのに kvconf.app.src の applications に宣言されておらず、kvconf を deps に含むアプリの relx リリースに public_key が収集されず、pkix バリデーション実行時に public_key の呼び出しが undef 例外になる。依存を正しく宣言する。
 
 ## 現状
 
@@ -16,6 +16,7 @@ kvconf_pkix が public_key を使用しているのに kvconf.app.src の applic
 - relx / rebar3 のリリースは .app の applications 依存グラフからアプリを収集する（public_key の宣言により、依存の asn1 / crypto も再帰的に収集される）
 - 開発時（rebar3 shell 等）は全 OTP ebin がコードパスに入るため検出されない
 - kvconf はライブラリとして他アプリの deps に組み込まれるため、問題が顕在化するのは kvconf を deps に含むアプリの relx リリースである。依存宣言が無いと dialyzer の PLT にも public_key が含まれない
+- 0001（クラッシュ経路のエラー返却化）が実装済みの場合は、kvconf_pkix の関数全体 try-catch が undef を捕捉して error を返すため、クラッシュせず pkix 設定が常に検証エラーになる。症状の現れ方は 0001 の実装順に依存するが、public_key の依存宣言が不足していること自体は変わらない
 
 ## 設計方針
 
