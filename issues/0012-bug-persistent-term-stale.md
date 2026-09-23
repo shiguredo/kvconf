@@ -23,7 +23,7 @@ initialize の検証失敗時やキーが設定から外れた場合に、persis
 - unset 対象は KvcList の全キー（設定ファイルから外れたキーの stale 値を消す。required = false / default = undefined で skip されるキーも含む）
 - KvcList から外れたキー（前回の KvcList にあったが今回の KvcList に無いキー）は、initialize が前回の KvcList を保持していないため検出できず、本 issue の対象外とする
 - UndocKvList は Configurations に存在する undoc_ キーのみを返し、値は検証済み値（persistent_term）を返す。set_value 直書きや前回 initialize の残留値が載らない
-- KvcList に無い undoc_ キーは返さない（0005 の設計方針と完了条件の「KvcList に無い undoc_ キーでも persistent_term に値があれば返す（現行どおり）」という記述は、本 issue の実装時に「KvcList に無い undoc_ キーは返さない」に更新することで調整する）
+- KvcList に無い undoc_ キーは返さない（0005 の該当記述は 0005 側で本 issue の方針に合わせて確定済み。0005 は atom 生成の停止のみを対象とする）
 - 0001 は undoc_kv_list の返り値形式の {ok, ...} 化を担当し、本 issue は値の取得元を担当する。undoc_kv_list_test の書き換えは 0001 の {ok, ...} 化を前提とした形式で本 issue が実施する。環境変数による上書き後の値（Configurations は env 上書き後の状態）も含む
 
 ## 完了条件
