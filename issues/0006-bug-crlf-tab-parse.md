@@ -3,7 +3,7 @@
 - Created: 2026-07-31
 - Completed: YYYY-MM-DD
 - Branch: feature/fix-crlf-tab-parse
-- Polished: 2026-07-31
+- Polished: 2026-09-23
 
 ## 目的
 
@@ -18,7 +18,7 @@
 - 値行は string:trim が \r を除去するため通るが、空行だけ非対称に失敗する
 - CRLF のコメント行（<<"# comment\r">>）は "#.*" が \r を吸収するため既に通る
 - タブインデントの値行（<<"\ta = 1">>）は string:trim が \t を除去するため既に通る
-- 0001 は parse_lines の string:trim の例外エラー返却化を、0010 はキー行の空キー判定を担当する。本 issue はコメント・空白行判定の正規表現のみを対象とする
+- 0001 は parse_kv_line/4 の string:trim の例外エラー返却化を、0010 はキー行の空キー判定を担当する。本 issue はコメント・空白行判定の正規表現のみを対象とする
 
 ## 設計方針
 
