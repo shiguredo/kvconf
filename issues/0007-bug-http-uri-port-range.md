@@ -3,7 +3,7 @@
 - Created: 2026-07-31
 - Completed: YYYY-MM-DD
 - Branch: feature/fix-http-uri-port-range
-- Polished: 2026-07-31
+- Polished: 2026-09-23
 
 ## 目的
 
@@ -12,10 +12,10 @@
 ## 現状
 
 - kvconf_validate の validate_http_uri は scheme / host / path の存在のみ検証し、port を検証しない
-- 実測 (OTP 29.0): "https://example.com:99999" が {ok, ...} で受理される（uri_string:parse は port を integer で返す。0 や 65535 も同様に受理される）
+- 実測 (OTP 29.1): "https://example.com:99999" が {ok, ...} で受理される（uri_string:parse は port を integer で返す。0 や 65535 も同様に受理される）
 - 空 port（"https://example.com:"）は uri_string:parse が port => undefined を返し、現行は {ok, ...} で受理される
 - 同一ライブラリの #kvc_port_number は validate_port_number で 0 から 65535 を検証しており、#kvc_http_uri だけ範囲検証がない
-- validate_http_uri は 0001（クラッシュ経路のエラー返却化）の経路 2 / 経路 5 と修正箇所が重なる。本 issue は port の範囲検証のみを対象とし、例外のエラー返却化は 0001 に委ねる
+- validate_http_uri は 0001（クラッシュ経路のエラー返却化）の経路 2 / 経路 5 と修正箇所が重なる。また 0020（scheme の大文字小文字）も同じ validate_http_uri を触る。0020 は scheme 比較、本 issue は port の範囲検証を担当し対象は重ならない。本 issue は port の範囲検証のみを対象とし、例外のエラー返却化は 0001 に委ねる
 
 ## 設計方針
 
