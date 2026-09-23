@@ -28,13 +28,13 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # ビルド済みの Erlang/OTP 29.0.6 + AWS-LC v5.8.0 を使う
-      # (rebar.config の minimum_otp_vsn は 29.0)
+      # ビルド済みの Erlang/OTP 29.1.1 + AWS-LC v5.9.0 を使う
+      # (rebar.config の minimum_otp_vsn は 29.1)
       - uses: shiguredo/setup-erlang@main
         id: erlang
         with:
-          otp-version: "29.0.6"
-          aws-lc-version: "v5.8.0"
+          otp-version: "29.1.1"
+          aws-lc-version: "v5.9.0"
 
       # setup-erlang が配置するベース PLT は rebar.config の warnings 設定が一致
       # しないと再利用されないため、project PLT を保存して差分解析だけにする。

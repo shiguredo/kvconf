@@ -13,9 +13,9 @@
 
 ### misc
 
-- [CHANGE] GitHub Actions のコンテナイメージをやめて shiguredo/setup-erlang で Erlang/OTP 29.0.6 / AWS-LC v5.8.0 をセットアップし、`minimum_otp_vsn` を 29.0 にする
+- [CHANGE] GitHub Actions のコンテナイメージをやめて shiguredo/setup-erlang で Erlang/OTP 29.1.1 / AWS-LC v5.9.0 をセットアップし、`minimum_otp_vsn` を 29.1 にする
   - @voluntas
-- [CHANGE] rebar3_efmt / rebar3_lint / elvis を削除し、prek (`prek.toml`) 経由の efmt / elint (`shiguredo/erlang-pre-commit` 2026.3.1) に切り替える
+- [CHANGE] rebar3_efmt / rebar3_lint / elvis を削除し、prek (`prek.toml`) 経由の efmt / elint (`shiguredo/erlang-pre-commit` 2026.4.0) に切り替える
   - CI は `j178/prek-action` で `prek.toml` のフックを実行する
   - @voluntas
 - [CHANGE] GitHub Actions のコンテナイメージを OTP 28.4.2 / OpenSSL 3.6.2 / Ubuntu 26.04 に上げる
