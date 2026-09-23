@@ -10,10 +10,10 @@
 - 設定ファイルに対するバリデーションを Erlang のレコードを利用して定義することができるため Dialyzer の恩恵を受けることができます
 - 環境変数による設定の上書きが可能で、プレフィックスを指定することもできます
 
-## rebar.conf
+## rebar.config
 
 ```erlang
-{deps, [{kvconf, "2024.3.1"}]}.
+{deps, [{kvconf, "2025.1.0"}]}.
 ```
 
 ## 設定ファイル例
@@ -38,6 +38,9 @@ key = value
     #kvc{key = e, type = #kvc_boolean{}, default = true}
 ]
 ```
+
+- `#kvc_interval` の `min` / `max` は入力の単位 (`ms` / `s` / `min` / `h`)、`out_time_unit` は `get_value/1` で返る値の単位 (`second` / `millisecond` / `microsecond`) を指定します
+- `available_time_units` を指定すると、設定ファイルで利用できる単位を制限できます (`undefined` は全ての単位を許可)
 
 ## 環境変数による上書き
 
@@ -65,7 +68,7 @@ os:putenv("SPAM_PORT", "8080"),
 %% 環境変数の値 8080 が優先される
 {ok, _UnknownKeys, _UndocKvList} = kvconf:initialize([
     #kvc{key = port, type = #kvc_port_number{}, required = true}
-], Binary, #{env_preifx => <<"SPAM">>}),
+], Binary, #{env_prefix => <<"SPAM">>}),
 8080 = kvconf:get_value(port).
 ```
 
