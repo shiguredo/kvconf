@@ -24,7 +24,7 @@ hooks = [
 # efmt / elint は shiguredo/erlang-pre-commit 経由で実行する
 # efmt / elint のバイナリはフックが初回実行時に GitHub Releases から取得するため、個別のインストールは不要
 # 対象ファイルはフック側で定義済み (efmt: *.erl / *.hrl / *.app.src / rebar.config、elint: *.erl / *.hrl)
-# rev は prek auto-update で更新する
+# rev は prek update で更新する
 # priority が小さいほど先に実行される。同じ priority なら並列実行される
 [[repos]]
 repo = "https://github.com/shiguredo/erlang-pre-commit"
