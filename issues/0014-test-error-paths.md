@@ -23,7 +23,7 @@ parse のエラーパス、環境変数上書きの失敗系、境界値の検�
 
 - 上記の各経路にテストを追加する
 - smoke_test に interval_ms の値（50 になること）のアサーションを追加する
-- validate_interval_test の min 超過と単位混在の max 境界ケースは 0002 の完了条件で追加されるため、本 issue では扱わない（0002 実装後に存在することを確認する）
+- validate_interval_test の min 未満と単位混在の max 境界ケースは 0002 の完了条件で追加されるため、本 issue では扱わない
 - テストの配置: parse_lines のテストは kvconf.erl の -ifdef(TEST) ブロック、validate_integer / validate_float のテストは kvconf_validate.erl の -ifdef(TEST) ブロック、環境変数上書きの失敗系・smoke_test・統合経路のテストは test/kvconf_tests.erl
 - duplicated_key のテスト入力は非空キー（"a = 1\na = 2" 等）で構成する（空キーの重複は 0010 の修正後に挙動が変わるため）
 - 不正 IPv4 文字列の例: <<"192.168.0.999">>、不正 IPv6 文字列の例: <<"2001:db8::zzzz">> が invalid_value になること
@@ -38,5 +38,4 @@ parse のエラーパス、環境変数上書きの失敗系、境界値の検�
 - smoke_test に interval_ms の値が 50 であることのアサーションが追加されている
 - #kvc_list_atom / #kvc_list_string が initialize 統合経路で検証される（smoke_test.conf への設定行追加と get_value のアサーション）
 - 不正 IPv4 / IPv6 文字列が invalid_value になることをテストで検証する
-- 0002 実装後に validate_interval_test の min 超過・単位混在 max 境界テストが存在することを確認する
 - 上記の全経路がテストでカバーされる
