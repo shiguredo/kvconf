@@ -30,7 +30,7 @@
   - 空ファイル（pem_decode が [] を返す分岐。3 関数すべて）
   - 不正 base64 の PEM（3 関数すべて。0001 の initialize 経路テストとは別に、バリデータ単体で error を返すことを確認する）
   - 暗号化 PEM（3 関数すべて）
-  - 'Certificate' タイプだが DER が壊れたエントリ（pkix_decode_cert の catch 節。fullchain と cert の両方）
+  - 'Certificate' タイプだが DER が壊れたエントリ（pkix_decode_cert の catch 節。fullchain と cert の両方）。末尾 1 バイトを反転するだけでは pkix_decode_cert が成功して catch 節に入らないため（実測）、長さフィールドを壊す・途中で切り詰めるなど構造的にデコード不能な DER を使う
   - 証明書を秘密鍵に渡した場合（privkey。0003 の修正後の挙動を検証する）
   - SubjectPublicKeyInfo のみのファイル（privkey。0003 の修正後の挙動を検証する）
   - 秘密鍵 + 証明書の 2 エントリ混在ファイル（privkey。0003 の修正後の挙動を検証する）
