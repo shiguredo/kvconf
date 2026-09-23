@@ -3,7 +3,7 @@
 - Created: 2026-07-31
 - Completed: YYYY-MM-DD
 - Branch: feature/add-pkix-tests
-- Polished: 2026-07-31
+- Polished: 2026-09-23
 
 ## 目的
 
@@ -13,7 +13,7 @@
 
 - test ディレクトリに PEM フィクスチャがなく、validate_pkix_fullchain_pem_file / validate_pkix_privkey_pem_file / validate_pkix_cert_pem_file が一度も実行されていない
 - カバレッジレポート（cover）上も kvconf_pkix は 0%（実測: kvconf 94% / kvconf_validate 93% / 全体 86%）
-- 0003 の完了条件は「本 issue は正常系とタイプ検証の回帰テストを追加し、エラー系のテストは 0013 が担う」としており、本 issue は 0003 が列挙したエラー系（混在ファイル / 1 エントリの 'EcpkParameters' のみ / 'EcpkParameters' + 'ECPrivateKey' 以外の組み合わせ / 3 エントリ以上 / 壊れた DER を含む）を検証する
+- 0003 の完了条件は「本 issue は正常系とタイプ検証の回帰テストを追加し、エラー系のテストは 0013 が担う」としており、本 issue は 0003 が列挙したエラー系（混在ファイル / 1 エントリの 'EcpkParameters' のみ / 'EcpkParameters' + 'ECPrivateKey' 以外の組み合わせ / 3 エントリ以上 / 壊れた DER / 明示的パラメータ（specifiedCurve）を含む）を検証する
 
 ## 設計方針
 
@@ -21,7 +21,7 @@
 - 一時ファイルは eunit の setup/teardown で一時ディレクトリを生成・削除して管理する
 - エラー系はバリデータ単体でテストし、期待値は error アトムに統一する（{error, {error, ...}} の形式になるのは initialize 経由のみであり、0001 の回帰テストの担当とする）
 - エラー系の各ケースは 3 つの検証関数すべてに適用する（3 関数は同一構造の分岐を持ち、1 関数だけに適用するとカバレッジ 80% に届かない）。privkey 特有のケース（'EcpkParameters' のみ等）は privkey のみに適用する
-- エラー系のフィクスチャは全てテスト実行時に public_key API で生成する
+- エラー系のフィクスチャはテスト実行時に public_key / crypto API で生成する（リポジトリにコミットしない）。明示的パラメータ（specifiedCurve）だけは public_key が扱えない（実測: public_key:generate_key(#'ECParameters'{}) は error:{badarg, {unknown_type, 'Prime-p'}} になり、OTP の ECPrivateKey.asn1 / PKIXAlgs-2009.asn1 は namedCurve のみを定義している）ため、crypto:ec_curve(secp256r1) で取得した曲線定数（p, a, b, g, n, h）から 'ECPrivateKey' の DER を手組みして PEM 化する（実測: der_decode('ECPrivateKey', Der) は error:{badmatch, {error, {asn1, {{invalid_choice_tag, ...}, ...}}}} になり、parameters を namedCurve に差し替えた対照 DER はデコードに成功する）
   - 暗号化 PEM は der_decode で ASN.1 entity に戻してから pem_entry_encode/3（暗号化オプション付き）で生成する
   - SubjectPublicKeyInfo は公開鍵レコード（#'RSAPublicKey'{} 等）を private 鍵レコードから組み立てて pem_entry_encode('SubjectPublicKeyInfo', ...) で生成する
   - 存在しないファイルパス / 空ファイル / 不正 base64 の PEM / 3 エントリ以上のファイルは binary を直接組み立てて生成する
@@ -38,11 +38,12 @@
   - 'EcpkParameters' + 'ECPrivateKey' 以外の組み合わせの 2 エントリファイル（privkey。0003 の修正後の挙動を検証する。秘密鍵 + 証明書の混在はこの組み合わせ不正の一部としてカバーされる）
   - 3 エントリ以上のファイル（privkey）
   - 壊れた DER のファイル（PRIVATE KEY ラベルにゴミ base64 を含むファイル。privkey。0003 の修正後の挙動を検証する）
+  - 明示的パラメータ（specifiedCurve）の EC 鍵ファイル（privkey。0003 の 48 行目から委譲されたケース。'ECPrivateKey' / 'EcpkParameters' + 'ECPrivateKey' / PKCS#8 の形態で der_decode が失敗し error になる。フィクスチャは上記のとおり DER を手組みする）
 - 本 issue は 0001（クラッシュ経路のエラー返却化）と 0003（privkey の検証強化）の実装後に着手する。privkey のエラー系の期待値は 0003 実装後の挙動を基準にする
 
 ## 完了条件
 
-- kvconf_pkix モジュールの行カバレッジが 80% 以上になる（make test 実行後の _build/test/cover/index.html で確認する。kvconf_pkix は現在 0% であり、上記の正常系・エラー系を 3 関数に適用すれば 80% を超える）
-- pkix_test_data/1 で生成した正常な証明書チェーン / 秘密鍵 / 証明書がそれぞれ {ok, ...} になることを検証する
+- kvconf_pkix モジュールの行カバレッジが 80% 以上になる（make test 実行後の _build/test/cover/index.html で確認する。kvconf_pkix は現在 0% であり、上記の正常系・エラー系を 3 関数に適用すれば 80% を超える。0003 が追加する privkey のタイプ別正常系テストが同一ファイルにあることを前提とし、privkey のタイプ分岐（'PrivateKeyInfo' / 'ECPrivateKey' / 'RSAPrivateKey' / 2 エントリ）は 0003 の正常系と本 issue のエラー系を合わせて到達させる）
+- pkix_test_data/1 で生成した正常な証明書チェーン / 証明書が {ok, ...} になり、エラー系の陽性対照として正常な秘密鍵も {ok, ...} になることを検証する（privkey のタイプ別正常系（PKCS#8 の RSA / namedCurve EC / Ed25519、'ECPrivateKey' 1 エントリ、'RSAPrivateKey' 1 エントリ、'EcpkParameters' + 'ECPrivateKey' の 2 エントリ順序両方）の回帰テストは 0003 が担い、本 issue では重複して追加しない）
 - 上記のエラー系がすべて error になることをテストで検証する
 - テストは test/kvconf_tests.erl に追加されている
