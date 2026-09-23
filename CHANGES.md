@@ -18,11 +18,15 @@
 - [CHANGE] rebar3_efmt / rebar3_lint / elvis を削除し、prek (`prek.toml`) 経由の efmt / elint (`shiguredo/erlang-pre-commit` 2026.4.0) に切り替える
   - CI は `j178/prek-action` で `prek.toml` のフックを実行する
   - @voluntas
-- [CHANGE] GitHub Actions のコンテナイメージを OTP 28.4.2 / OpenSSL 3.6.2 / Ubuntu 26.04 に上げる
-  - @voluntas
 - [CHANGE] Slack 通知を rtCamp/action-slack-notify から shiguredo/github-actions/.github/actions/slack-notify に切り替える
   - 通知を別ジョブに分離し `notify_mode` のデフォルト (`failure_and_fixed`) を利用する
-  - Fixed 判定のため `actions: read` / `contents: read` 権限と `concurrency` 設定を追加する
+  - Fixed 判定のため `actions: read` / `contents: read` 権限を追加し、同一 ref への連続 push で古い実行を打ち切る `concurrency` を設定する
+  - @voluntas
+- [UPDATE] CI の dialyzer に project PLT のキャッシュを追加する
+  - @voluntas
+- [UPDATE] rebar.lock をコミットする
+  - @voluntas
+- [UPDATE] 内部リファクタリングとして parse_kv_line の抽出、kvconf_pkix の maybe 構文化、IN_TIME_UNIT マクロの移動を行う
   - @voluntas
 
 ## 2025.1.0
