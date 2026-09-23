@@ -13,7 +13,7 @@ AGENTS.md の「コメントは全て日本語にすること」に違反する�
 
 - kvconf_pkix の validate_pkix_fullchain_pem_file に英語コメント "PEM or DER" がある（public_key:pem_decode は DER 形式の入力を受理せず [] を返すため、このコメントは実装と食い違っている。日本語化の際に実装に沿った表現に改める）
 - validate_pkix_privkey_pem_file / validate_pkix_cert_pem_file に英語コメント "Format" がある
-- 同じファイルの 1 行目付近の TODO コメントにタイポ（vlaidate → validate）がある
+- 同じファイルの `%% TODO: 複数 CA ファイル設定できる vlaidate_pkix_cacert_path ...` にタイポ（`vlaidate` → `validate`）がある
 - kvconf.erl / test/kvconf_tests.erl / include/kvconf.hrl には英語のみのコメントはない。kvconf_validate.erl には英語のみのテスト見出しコメント（%% infinity / %% path /spam / %% invalid_value 等）があるが、テストコード内の動作注記であり本 issue の対象外とする
 - 対象 3 関数は 0001（クラッシュ経路のエラー返却化）と 0003（privkey の検証強化）の構造変更対象と重なるため、本 issue は 0001 / 0003 の実装後に着手する
 
