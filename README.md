@@ -75,8 +75,8 @@ os:putenv("SPAM_PORT", "8080"),
 ## ライセンス
 
 ```text
-Copyright 2019-2025, Shiguredo Inc.
-Copyright 2019-2021, Shunichi Shinohara (Original Author)
+Copyright 2019 Shiguredo Inc.
+Copyright 2019 Shunichi Shinohara (Original Author)
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
